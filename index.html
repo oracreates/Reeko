@@ -1,250 +1,260 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <title>Reeko</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta charset="UTF-8">
+<title>Reeko</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <style>
-    body {
-      margin: 0;
-      font-family: Arial, sans-serif;
-      background: #0b0f0b;
-      color: #eaffea;
-    }
+<style>
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: #0b0f0b;
+  color: #eaffea;
+}
 
-    header {
-      padding: 14px 16px;
-      border-bottom: 1px solid #1e2e1e;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
+header {
+  padding: 14px 16px;
+  border-bottom: 1px solid #1e2e1e;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
 
-    header h1 {
-      color: #7cff9b;
-      margin: 0;
-    }
+header h1 {
+  color: #7cff9b;
+  margin: 0;
+}
 
-    .nav button {
-      background: none;
-      color: #7cff9b;
-      border: 1px solid #1e2e1e;
-      margin-left: 6px;
-      padding: 6px 10px;
-      cursor: pointer;
-    }
+.nav button {
+  background: none;
+  color: #7cff9b;
+  border: 1px solid #1e2e1e;
+  margin-left: 6px;
+  padding: 6px 10px;
+  cursor: pointer;
+}
 
-    .nav button.active {
-      background: #7cff9b;
-      color: #0b0f0b;
-    }
+.nav button.active {
+  background: #7cff9b;
+  color: #0b0f0b;
+}
 
-    .container {
-      padding: 16px;
-      max-width: 780px;
-      margin: auto;
-    }
+.container {
+  padding: 16px;
+  max-width: 780px;
+  margin: auto;
+}
 
-    .box {
-      background: #101610;
-      border: 1px solid #1e2e1e;
-      padding: 14px;
-      margin-bottom: 20px;
-    }
+.box {
+  background: #101610;
+  border: 1px solid #1e2e1e;
+  padding: 14px;
+  margin-bottom: 20px;
+}
 
-    input {
-      width: 100%;
-      padding: 8px;
-      margin-top: 8px;
-      background: #0b0f0b;
-      border: 1px solid #1e2e1e;
-      color: #eaffea;
-    }
+input {
+  width: 100%;
+  padding: 8px;
+  margin-top: 8px;
+  background: #0b0f0b;
+  border: 1px solid #1e2e1e;
+  color: #eaffea;
+}
 
-    .market-item {
-      background: #101610;
-      border: 1px solid #1e2e1e;
-      padding: 12px;
-      margin-bottom: 10px;
-      display: flex;
-      justify-content: space-between;
-    }
+.market-item {
+  background: #101610;
+  border: 1px solid #1e2e1e;
+  padding: 12px;
+  margin-bottom: 10px;
+  display: flex;
+  justify-content: space-between;
+}
 
-    .token-name {
-      font-weight: bold;
-      color: #7cff9b;
-    }
+.token-name {
+  font-weight: bold;
+  color: #7cff9b;
+}
 
-    .footer {
-      position: fixed;
-      bottom: 10px;
-      right: 12px;
-      font-size: 12px;
-      opacity: 0.6;
-    }
+.footer {
+  position: fixed;
+  bottom: 10px;
+  right: 12px;
+  font-size: 12px;
+  opacity: 0.6;
+}
 
-    .hidden { display:none; }
-  </style>
+.hidden { display:none; }
+</style>
 </head>
 
 <body>
 
 <header>
-  <h1>Reeko</h1>
-  <div class="nav">
-    <button id="nav-create" onclick="showPage('create')">Create</button>
-    <button id="nav-market" onclick="showPage('market')">Creator Coins</button>
-    <button id="nav-connect" onclick="showPage('connect')">Connect</button>
-  </div>
+<h1>Reeko</h1>
+<div class="nav">
+  <button id="nav-create" onclick="showPage('create')">Create</button>
+  <button id="nav-market" onclick="showPage('market')">Creator Coins</button>
+  <button id="nav-connect" onclick="showPage('connect')">Connect</button>
+</div>
 </header>
 
 <div class="container">
 
-  <!-- CREATE -->
-  <div id="page-create" class="box">
-    <strong>Launch Creator Coin</strong>
-    <input id="name" placeholder="Creator / Project name" />
-    <input id="symbol" placeholder="Symbol" />
-    <button onclick="launchToken()">Launch</button>
-    <p id="creator-earnings"></p>
+<!-- CREATE -->
+<div id="page-create" class="box hidden">
+  <strong>Launch Creator Coin</strong>
+  <input id="name" placeholder="Creator / Project name" />
+  <input id="symbol" placeholder="Symbol" />
+  <button onclick="launchToken()">Launch</button>
+  <p id="creator-earnings"></p>
+</div>
+
+<!-- MARKET -->
+<div id="page-market">
+  <div class="box">
+    <strong>Creator Coins</strong>
+    <div id="market"></div>
   </div>
 
-  <!-- MARKET -->
-  <div id="page-market" class="hidden">
-    <div class="box">
-      <strong>Creator Coins</strong>
-      <div id="market"></div>
-    </div>
-
-    <div class="box">
-      <strong>Your Portfolio</strong>
-      <div id="portfolio">No holdings</div>
-    </div>
+  <div class="box">
+    <strong>Your Portfolio</strong>
+    <div id="portfolio">No holdings</div>
   </div>
+</div>
 
-  <!-- CONNECT -->
-  <div id="page-connect" class="box hidden">
-    <button onclick="connectWallet()">Connect Wallet</button>
-    <p id="wallet">Not connected</p>
-  </div>
+<!-- CONNECT -->
+<div id="page-connect" class="box hidden">
+  <button onclick="connectWallet()">Connect Wallet</button>
+  <p id="wallet">Not connected</p>
+</div>
 
 </div>
 
 <div class="footer">© reeko</div>
 
 <script>
-  let tokens = [];
-  let portfolio = {};
-  let creatorFees = 0;
-  let platformFees = 0;
+const nameInput = document.getElementById("name");
+const symbolInput = document.getElementById("symbol");
+const marketDiv = document.getElementById("market");
+const portfolioDiv = document.getElementById("portfolio");
+const creatorEarnings = document.getElementById("creator-earnings");
 
-  const CREATOR_FEE = 0.03;
-  const PLATFORM_FEE = 0.01;
+let tokens = [];
+let portfolio = {};
 
-  function showPage(p) {
-    document.querySelectorAll("[id^='page-']").forEach(e => e.classList.add("hidden"));
-    document.getElementById("page-" + p).classList.remove("hidden");
+const CREATOR_FEE = 0.03;
+const PLATFORM_FEE = 0.01;
 
-    document.querySelectorAll(".nav button").forEach(b => b.classList.remove("active"));
-    document.getElementById("nav-" + p).classList.add("active");
+function showPage(p) {
+  document.querySelectorAll("[id^='page-']").forEach(e => e.classList.add("hidden"));
+  document.getElementById("page-" + p).classList.remove("hidden");
+
+  document.querySelectorAll(".nav button").forEach(b => b.classList.remove("active"));
+  document.getElementById("nav-" + p).classList.add("active");
+}
+showPage("market");
+
+async function connectWallet() {
+  if (window.solana?.isPhantom) {
+    const r = await window.solana.connect();
+    wallet.innerText = r.publicKey.toString();
+  } else if (window.solflare) {
+    await window.solflare.connect();
+    wallet.innerText = window.solflare.publicKey.toString();
+  } else {
+    alert("Install Phantom or Solflare");
   }
+}
+
+function launchToken() {
+  const name = nameInput.value.trim();
+  const symbol = symbolInput.value.trim();
+
+  if (!name || !symbol) {
+    alert("Fill all fields");
+    return;
+  }
+
+  const token = {
+    name,
+    symbol,
+    price: 1,
+    creatorRevenue: 0
+  };
+
+  tokens.unshift(token);
+  startSimulation(token);
+
+  nameInput.value = "";
+  symbolInput.value = "";
+
+  renderAll();
   showPage("market");
+}
 
-  async function connectWallet() {
-    if (window.solana?.isPhantom) {
-      const r = await window.solana.connect();
-      wallet.innerText = r.publicKey.toString();
-    } else if (window.solflare) {
-      await window.solflare.connect();
-      wallet.innerText = window.solflare.publicKey.toString();
-    } else alert("Install Phantom or Solflare");
-  }
+function buyToken(i) {
+  const t = tokens[i];
+  t.creatorRevenue += t.price * CREATOR_FEE;
+  t.price *= 1.05;
 
-  function launchToken() {
-    const name = nameInput.value;
-    const symbol = symbolInput.value;
-    if (!name || !symbol) return;
+  portfolio[t.symbol] = portfolio[t.symbol] || { qty: 0 };
+  portfolio[t.symbol].qty += 1;
 
-    tokens.unshift({
-      name,
-      symbol,
-      price: 1,
-      creatorRevenue: 0
-    });
+  renderAll();
+}
 
-    startSimulation(tokens[0]);
+function sellToken(i) {
+  const t = tokens[i];
+  if (!portfolio[t.symbol]) return;
+
+  t.price *= 0.95;
+  portfolio[t.symbol].qty -= 1;
+  if (portfolio[t.symbol].qty <= 0) delete portfolio[t.symbol];
+
+  renderAll();
+}
+
+function startSimulation(token) {
+  setInterval(() => {
+    token.price *= Math.random() > 0.5 ? 1.02 : 0.98;
+    token.creatorRevenue += token.price * 0.01;
     renderAll();
-    showPage("market");
-  }
+  }, 3000);
+}
 
-  function buyToken(i) {
-    const t = tokens[i];
-    const fee = t.price * CREATOR_FEE;
-    t.creatorRevenue += fee;
-    platformFees += t.price * PLATFORM_FEE;
-
-    t.price *= 1.05;
-    portfolio[t.symbol] = portfolio[t.symbol] || { qty: 0, cost: 0 };
-    portfolio[t.symbol].qty += 1;
-    portfolio[t.symbol].cost += t.price;
-
-    renderAll();
-  }
-
-  function sellToken(i) {
-    const t = tokens[i];
-    if (!portfolio[t.symbol]) return;
-
-    t.price *= 0.95;
-    portfolio[t.symbol].qty -= 1;
-    if (portfolio[t.symbol].qty === 0) delete portfolio[t.symbol];
-
-    renderAll();
-  }
-
-  function startSimulation(token) {
-    setInterval(() => {
-      const up = Math.random() > 0.5;
-      token.price *= up ? 1.02 : 0.98;
-      token.creatorRevenue += token.price * 0.01;
-      renderAll();
-    }, 3000);
-  }
-
-  function renderMarket() {
-    market.innerHTML = "";
-    tokens.forEach((t,i) => {
-      market.innerHTML += `
-        <div class="market-item">
-          <div>
-            <div class="token-name">${t.name} (${t.symbol})</div>
-            Creator earnings: $${t.creatorRevenue.toFixed(2)}
-          </div>
-          <div>
-            $${t.price.toFixed(3)}<br/>
-            <button onclick="buyToken(${i})">Buy</button>
-            <button onclick="sellToken(${i})">Sell</button>
-          </div>
+function renderMarket() {
+  marketDiv.innerHTML = "";
+  tokens.forEach((t,i) => {
+    marketDiv.innerHTML += `
+      <div class="market-item">
+        <div>
+          <div class="token-name">${t.name} (${t.symbol})</div>
+          Creator earnings: $${t.creatorRevenue.toFixed(2)}
         </div>
-      `;
-    });
-  }
+        <div>
+          $${t.price.toFixed(3)}<br/>
+          <button onclick="buyToken(${i})">Buy</button>
+          <button onclick="sellToken(${i})">Sell</button>
+        </div>
+      </div>
+    `;
+  });
+}
 
-  function renderPortfolio() {
-    portfolioDiv.innerHTML = "";
-    for (let s in portfolio) {
-      const t = tokens.find(x => x.symbol === s);
-      const val = t.price * portfolio[s].qty;
-      portfolioDiv.innerHTML += `<div>${s}: ${portfolio[s].qty} | Value: $${val.toFixed(2)}</div>`;
-    }
-    if (!portfolioDiv.innerHTML) portfolioDiv.innerText = "No holdings";
+function renderPortfolio() {
+  portfolioDiv.innerHTML = "";
+  for (let s in portfolio) {
+    const t = tokens.find(x => x.symbol === s);
+    portfolioDiv.innerHTML += `<div>${s}: ${portfolio[s].qty} | Value: $${(t.price * portfolio[s].qty).toFixed(2)}</div>`;
   }
+  if (!portfolioDiv.innerHTML) portfolioDiv.innerText = "No holdings";
+}
 
-  function renderAll() {
-    renderMarket();
-    renderPortfolio();
-  }
+function renderAll() {
+  renderMarket();
+  renderPortfolio();
+}
 </script>
 
 </body>
