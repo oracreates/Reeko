@@ -14,7 +14,7 @@
     }
 
     header {
-      padding: 16px;
+      padding: 14px 16px;
       border-bottom: 1px solid #1e2e1e;
       display: flex;
       justify-content: space-between;
@@ -27,24 +27,28 @@
       font-size: 22px;
     }
 
-    button {
+    .nav button {
+      background: none;
+      color: #7cff9b;
+      border: 1px solid #1e2e1e;
+      margin-left: 6px;
+      padding: 6px 10px;
+      cursor: pointer;
+    }
+
+    .nav button.active {
       background: #7cff9b;
       color: #0b0f0b;
-      border: none;
-      padding: 6px 10px;
       font-weight: bold;
-      cursor: pointer;
-      border-radius: 4px;
-      margin-left: 4px;
     }
 
     .container {
       padding: 16px;
-      max-width: 720px;
+      max-width: 760px;
       margin: auto;
     }
 
-    .launch-box {
+    .box {
       background: #101610;
       border: 1px solid #1e2e1e;
       padding: 14px;
@@ -75,21 +79,16 @@
       color: #7cff9b;
     }
 
-    .stats {
-      font-size: 12px;
-      opacity: 0.8;
-    }
-
-    .actions button {
-      margin-top: 4px;
-    }
-
     .footer {
       position: fixed;
       bottom: 10px;
       right: 12px;
       font-size: 12px;
       opacity: 0.6;
+    }
+
+    .hidden {
+      display: none;
     }
   </style>
 </head>
@@ -98,28 +97,73 @@
 
 <header>
   <h1>Reeko</h1>
-  <button onclick="connectWallet()">Connect</button>
+  <div class="nav">
+    <button id="nav-create" onclick="showPage('create')">Create</button>
+    <button id="nav-market" onclick="showPage('market')">Creator Coins</button>
+    <button id="nav-connect" onclick="showPage('connect')">Connect</button>
+  </div>
 </header>
 
 <div class="container">
-  <p id="wallet">Not connected</p>
 
-  <div class="launch-box">
+  <!-- CREATE PAGE -->
+  <div id="page-create" class="box">
     <strong>Launch Creator Token</strong>
     <input id="name" placeholder="Token name" />
     <input id="symbol" placeholder="Symbol" />
     <input id="supply" placeholder="Total supply" />
-    <button onclick="launchToken()" style="margin-top:10px;">Create</button>
+    <button onclick="launchToken()">Create</button>
   </div>
 
-  <div id="market"></div>
+  <!-- MARKET PAGE -->
+  <div id="page-market" class="hidden">
+    <div class="box">
+      <strong>Creator Coins</strong>
+      <div id="market"></div>
+    </div>
+
+    <div class="box">
+      <strong>Your Portfolio</strong>
+      <div id="portfolio">No positions yet</div>
+    </div>
+
+    <div class="box">
+      <strong>Reeko Revenue</strong>
+      <p id="fees">$0.00 earned in fees</p>
+    </div>
+  </div>
+
+  <!-- CONNECT PAGE -->
+  <div id="page-connect" class="box hidden">
+    <strong>Connect</strong><br /><br />
+    <button onclick="connectWallet()">Connect Wallet</button>
+    <p id="wallet">Not connected</p>
+
+    <hr style="border-color:#1e2e1e" />
+
+    <p style="opacity:0.7">Google sign-in (coming soon)</p>
+    <button disabled>Sign in with Google</button>
+  </div>
+
 </div>
 
 <div class="footer">© reeko</div>
 
 <script>
   let tokens = [];
-  const FEE_RATE = 0.02; // 2% fee
+  let portfolio = {};
+  let totalFees = 0;
+  const FEE_RATE = 0.02;
+
+  function showPage(page) {
+    document.querySelectorAll("[id^='page-']").forEach(p => p.classList.add("hidden"));
+    document.getElementById("page-" + page).classList.remove("hidden");
+
+    document.querySelectorAll(".nav button").forEach(b => b.classList.remove("active"));
+    document.getElementById("nav-" + page).classList.add("active");
+  }
+
+  showPage("market");
 
   async function connectWallet() {
     try {
@@ -147,64 +191,81 @@
     const name = document.getElementById("name").value;
     const symbol = document.getElementById("symbol").value;
     const supply = document.getElementById("supply").value;
-
     if (!name || !symbol || !supply) return;
 
     const trust = Math.floor(Math.random() * 100);
     const attention = Math.floor(Math.random() * 100);
-    const price = ((trust + attention) / 20).toFixed(3);
+    const price = ((trust + attention) / 20).toFixed(4);
 
-    tokens.unshift({
-      name,
-      symbol,
-      trust,
-      attention,
-      price: parseFloat(price)
-    });
-
-    renderMarket();
+    tokens.unshift({ name, symbol, trust, attention, price: parseFloat(price) });
+    renderAll();
+    showPage("market");
 
     document.getElementById("name").value = "";
     document.getElementById("symbol").value = "";
     document.getElementById("supply").value = "";
   }
 
-  function buyToken(index) {
-    tokens[index].price += tokens[index].price * 0.05;
-    tokens[index].attention += 1;
-    renderMarket();
+  function buyToken(i) {
+    const t = tokens[i];
+    totalFees += t.price * FEE_RATE;
+    t.price += t.price * 0.05;
+    t.attention += 1;
+    portfolio[t.symbol] = (portfolio[t.symbol] || 0) + 1;
+    renderAll();
   }
 
-  function sellToken(index) {
-    tokens[index].price -= tokens[index].price * 0.05;
-    if (tokens[index].price < 0.001) tokens[index].price = 0.001;
-    tokens[index].attention -= 1;
-    renderMarket();
+  function sellToken(i) {
+    const t = tokens[i];
+    if (!portfolio[t.symbol]) return;
+    totalFees += t.price * FEE_RATE;
+    t.price -= t.price * 0.05;
+    if (t.price < 0.001) t.price = 0.001;
+    t.attention -= 1;
+    portfolio[t.symbol]--;
+    if (portfolio[t.symbol] === 0) delete portfolio[t.symbol];
+    renderAll();
   }
 
   function renderMarket() {
     const market = document.getElementById("market");
     market.innerHTML = "";
-
     tokens.forEach((t, i) => {
       market.innerHTML += `
         <div class="market-item">
           <div>
             <div class="token-name">${t.name} (${t.symbol})</div>
-            <div class="stats">
-              Trust: ${t.trust} | Attention: ${t.attention}
-            </div>
+            <div>Trust: ${t.trust} | Attention: ${t.attention}</div>
           </div>
           <div>
-            <div>$${t.price.toFixed(4)}</div>
-            <div class="actions">
-              <button onclick="buyToken(${i})">Buy</button>
-              <button onclick="sellToken(${i})">Sell</button>
-            </div>
+            $${t.price.toFixed(4)}<br />
+            <button onclick="buyToken(${i})">Buy</button>
+            <button onclick="sellToken(${i})">Sell</button>
           </div>
         </div>
       `;
     });
+  }
+
+  function renderPortfolio() {
+    const p = document.getElementById("portfolio");
+    if (!Object.keys(portfolio).length) {
+      p.innerText = "No positions yet";
+      return;
+    }
+    p.innerHTML = "";
+    for (let k in portfolio) p.innerHTML += `<div>${k}: ${portfolio[k]}</div>`;
+  }
+
+  function renderFees() {
+    document.getElementById("fees").innerText =
+      "$" + totalFees.toFixed(4) + " earned in fees";
+  }
+
+  function renderAll() {
+    renderMarket();
+    renderPortfolio();
+    renderFees();
   }
 </script>
 
