@@ -8,35 +8,63 @@
   <style>
     body {
       font-family: Arial, sans-serif;
-      background: #0f0f14;
-      color: white;
+      background: #05070d;
+      color: #e6ebff;
       padding: 20px;
     }
 
     h1 {
-      color: #7cffc4;
+      color: #4da3ff;
     }
 
     button {
       padding: 10px 16px;
-      background: #7cffc4;
+      background: #1f6bff;
+      color: white;
       border: none;
       cursor: pointer;
       margin-top: 10px;
       font-weight: bold;
+      border-radius: 6px;
+    }
+
+    button:hover {
+      background: #3b82ff;
     }
 
     input {
       padding: 8px;
       width: 100%;
       max-width: 300px;
+      background: #0c1020;
+      color: white;
+      border: 1px solid #1f6bff;
+      border-radius: 4px;
     }
 
     .card {
-      background: #1a1a24;
+      background: #0b1228;
       padding: 20px;
       margin-top: 20px;
+      border-radius: 10px;
+      border: 1px solid #142a52;
+    }
+
+    .market-item {
+      background: #0e1733;
+      padding: 15px;
+      margin-top: 10px;
       border-radius: 8px;
+      border-left: 4px solid #1f6bff;
+    }
+
+    .footer {
+      position: fixed;
+      bottom: 10px;
+      right: 15px;
+      font-size: 12px;
+      color: #5c7cff;
+      opacity: 0.8;
     }
   </style>
 </head>
@@ -44,26 +72,35 @@
 <body>
 
   <h1>Reeko</h1>
-  <p>Fund creators. Trade trust. Build the future.</p>
+  <p>Fund creators. Trade trust. Price attention.</p>
 
   <button onclick="connectWallet()">Connect Wallet</button>
   <p id="wallet">Not connected</p>
 
+  <!-- Launch Section -->
   <div class="card">
-    <button onclick="showLaunch()">Launch Creator Token</button>
+    <h3>Launch Creator Token</h3>
 
-    <div id="launch" style="display:none; margin-top:20px;">
-      <input id="name" placeholder="Token Name" /><br /><br />
-      <input id="symbol" placeholder="Token Symbol" /><br /><br />
-      <input id="supply" placeholder="Total Supply" /><br /><br />
-      <button onclick="launchToken()">Create Token</button>
-    </div>
+    <input id="name" placeholder="Token Name" /><br /><br />
+    <input id="symbol" placeholder="Token Symbol" /><br /><br />
+    <input id="supply" placeholder="Total Supply" /><br /><br />
+
+    <button onclick="launchToken()">Create Token</button>
   </div>
 
+  <!-- Market -->
+  <div class="card">
+    <h3>Creator Market</h3>
+    <div id="market"></div>
+  </div>
+
+  <div class="footer">© Reeko</div>
+
   <script>
+    let tokens = [];
+
     async function connectWallet() {
       try {
-        // Phantom
         if (window.solana && window.solana.isPhantom) {
           const res = await window.solana.connect();
           document.getElementById("wallet").innerText =
@@ -71,7 +108,6 @@
           return;
         }
 
-        // Solflare
         if (window.solflare) {
           await window.solflare.connect();
           document.getElementById("wallet").innerText =
@@ -79,14 +115,10 @@
           return;
         }
 
-        alert("Please install Phantom or Solflare wallet");
-      } catch (err) {
+        alert("Install Phantom or Solflare wallet");
+      } catch {
         alert("Wallet connection cancelled");
       }
-    }
-
-    function showLaunch() {
-      document.getElementById("launch").style.display = "block";
     }
 
     function launchToken() {
@@ -99,13 +131,33 @@
         return;
       }
 
-      alert(
-        "Token Created (MVP UI)\n\n" +
-        "Name: " + name +
-        "\nSymbol: " + symbol +
-        "\nSupply: " + supply +
-        "\n\nNext: On-chain creation"
-      );
+      const trust = Math.floor(Math.random() * 100);
+      const attention = Math.floor(Math.random() * 100);
+      const price = ((trust + attention) / 20).toFixed(2);
+
+      const token = { name, symbol, trust, attention, price };
+      tokens.push(token);
+      renderMarket();
+
+      document.getElementById("name").value = "";
+      document.getElementById("symbol").value = "";
+      document.getElementById("supply").value = "";
+    }
+
+    function renderMarket() {
+      const market = document.getElementById("market");
+      market.innerHTML = "";
+
+      tokens.forEach(t => {
+        market.innerHTML += `
+          <div class="market-item">
+            <strong>${t.name} (${t.symbol})</strong><br />
+            Trust: ${t.trust}<br />
+            Attention: ${t.attention}<br />
+            Price: $${t.price}
+          </div>
+        `;
+      });
     }
   </script>
 
