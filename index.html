@@ -31,19 +31,16 @@
       background: #7cff9b;
       color: #0b0f0b;
       border: none;
-      padding: 8px 14px;
+      padding: 6px 10px;
       font-weight: bold;
       cursor: pointer;
       border-radius: 4px;
-    }
-
-    button:hover {
-      opacity: 0.9;
+      margin-left: 4px;
     }
 
     .container {
       padding: 16px;
-      max-width: 700px;
+      max-width: 720px;
       margin: auto;
     }
 
@@ -79,8 +76,12 @@
     }
 
     .stats {
-      font-size: 13px;
-      opacity: 0.85;
+      font-size: 12px;
+      opacity: 0.8;
+    }
+
+    .actions button {
+      margin-top: 4px;
     }
 
     .footer {
@@ -95,90 +96,117 @@
 
 <body>
 
-  <header>
-    <h1>Reeko</h1>
-    <button onclick="connectWallet()">Connect</button>
-  </header>
+<header>
+  <h1>Reeko</h1>
+  <button onclick="connectWallet()">Connect</button>
+</header>
 
-  <div class="container">
-    <p id="wallet">Not connected</p>
+<div class="container">
+  <p id="wallet">Not connected</p>
 
-    <div class="launch-box">
-      <strong>Launch Creator Token</strong><br />
-      <input id="name" placeholder="Token name" />
-      <input id="symbol" placeholder="Symbol" />
-      <input id="supply" placeholder="Total supply" />
-      <button onclick="launchToken()" style="margin-top:10px;">Create</button>
-    </div>
-
-    <div id="market"></div>
+  <div class="launch-box">
+    <strong>Launch Creator Token</strong>
+    <input id="name" placeholder="Token name" />
+    <input id="symbol" placeholder="Symbol" />
+    <input id="supply" placeholder="Total supply" />
+    <button onclick="launchToken()" style="margin-top:10px;">Create</button>
   </div>
 
-  <div class="footer">© reeko</div>
+  <div id="market"></div>
+</div>
 
-  <script>
-    let tokens = [];
+<div class="footer">© reeko</div>
 
-    async function connectWallet() {
-      try {
-        if (window.solana && window.solana.isPhantom) {
-          const res = await window.solana.connect();
-          document.getElementById("wallet").innerText =
-            "Connected: " + res.publicKey.toString();
-          return;
-        }
+<script>
+  let tokens = [];
+  const FEE_RATE = 0.02; // 2% fee
 
-        if (window.solflare) {
-          await window.solflare.connect();
-          document.getElementById("wallet").innerText =
-            "Connected: " + window.solflare.publicKey.toString();
-          return;
-        }
-
-        alert("Install Phantom or Solflare");
-      } catch {
-        alert("Connection cancelled");
+  async function connectWallet() {
+    try {
+      if (window.solana && window.solana.isPhantom) {
+        const res = await window.solana.connect();
+        document.getElementById("wallet").innerText =
+          "Connected: " + res.publicKey.toString();
+        return;
       }
+
+      if (window.solflare) {
+        await window.solflare.connect();
+        document.getElementById("wallet").innerText =
+          "Connected: " + window.solflare.publicKey.toString();
+        return;
+      }
+
+      alert("Install Phantom or Solflare");
+    } catch {
+      alert("Connection cancelled");
     }
+  }
 
-    function launchToken() {
-      const name = document.getElementById("name").value;
-      const symbol = document.getElementById("symbol").value;
-      const supply = document.getElementById("supply").value;
+  function launchToken() {
+    const name = document.getElementById("name").value;
+    const symbol = document.getElementById("symbol").value;
+    const supply = document.getElementById("supply").value;
 
-      if (!name || !symbol || !supply) return;
+    if (!name || !symbol || !supply) return;
 
-      const trust = Math.floor(Math.random() * 100);
-      const attention = Math.floor(Math.random() * 100);
-      const price = ((trust + attention) / 15).toFixed(3);
+    const trust = Math.floor(Math.random() * 100);
+    const attention = Math.floor(Math.random() * 100);
+    const price = ((trust + attention) / 20).toFixed(3);
 
-      tokens.unshift({ name, symbol, trust, attention, price });
-      renderMarket();
+    tokens.unshift({
+      name,
+      symbol,
+      trust,
+      attention,
+      price: parseFloat(price)
+    });
 
-      document.getElementById("name").value = "";
-      document.getElementById("symbol").value = "";
-      document.getElementById("supply").value = "";
-    }
+    renderMarket();
 
-    function renderMarket() {
-      const market = document.getElementById("market");
-      market.innerHTML = "";
+    document.getElementById("name").value = "";
+    document.getElementById("symbol").value = "";
+    document.getElementById("supply").value = "";
+  }
 
-      tokens.forEach(t => {
-        market.innerHTML += `
-          <div class="market-item">
-            <div>
-              <div class="token-name">${t.name} (${t.symbol})</div>
-              <div class="stats">
-                Trust: ${t.trust} | Attention: ${t.attention}
-              </div>
+  function buyToken(index) {
+    tokens[index].price += tokens[index].price * 0.05;
+    tokens[index].attention += 1;
+    renderMarket();
+  }
+
+  function sellToken(index) {
+    tokens[index].price -= tokens[index].price * 0.05;
+    if (tokens[index].price < 0.001) tokens[index].price = 0.001;
+    tokens[index].attention -= 1;
+    renderMarket();
+  }
+
+  function renderMarket() {
+    const market = document.getElementById("market");
+    market.innerHTML = "";
+
+    tokens.forEach((t, i) => {
+      market.innerHTML += `
+        <div class="market-item">
+          <div>
+            <div class="token-name">${t.name} (${t.symbol})</div>
+            <div class="stats">
+              Trust: ${t.trust} | Attention: ${t.attention}
             </div>
-            <div>$${t.price}</div>
           </div>
-        `;
-      });
-    }
-  </script>
+          <div>
+            <div>$${t.price.toFixed(4)}</div>
+            <div class="actions">
+              <button onclick="buyToken(${i})">Buy</button>
+              <button onclick="sellToken(${i})">Sell</button>
+            </div>
+          </div>
+        </div>
+      `;
+    });
+  }
+</script>
 
 </body>
 </html>
