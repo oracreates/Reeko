@@ -2,99 +2,119 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Reeko – Internet Capital Markets</title>
+  <title>Reeko</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
   <style>
     body {
+      margin: 0;
       font-family: Arial, sans-serif;
-      background: #05070d;
-      color: #e6ebff;
-      padding: 20px;
+      background: #0b0f0b;
+      color: #eaffea;
     }
 
-    h1 {
-      color: #4da3ff;
+    header {
+      padding: 16px;
+      border-bottom: 1px solid #1e2e1e;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    header h1 {
+      color: #7cff9b;
+      margin: 0;
+      font-size: 22px;
     }
 
     button {
-      padding: 10px 16px;
-      background: #1f6bff;
-      color: white;
+      background: #7cff9b;
+      color: #0b0f0b;
       border: none;
-      cursor: pointer;
-      margin-top: 10px;
+      padding: 8px 14px;
       font-weight: bold;
-      border-radius: 6px;
-    }
-
-    button:hover {
-      background: #3b82ff;
-    }
-
-    input {
-      padding: 8px;
-      width: 100%;
-      max-width: 300px;
-      background: #0c1020;
-      color: white;
-      border: 1px solid #1f6bff;
+      cursor: pointer;
       border-radius: 4px;
     }
 
-    .card {
-      background: #0b1228;
-      padding: 20px;
-      margin-top: 20px;
-      border-radius: 10px;
-      border: 1px solid #142a52;
+    button:hover {
+      opacity: 0.9;
+    }
+
+    .container {
+      padding: 16px;
+      max-width: 700px;
+      margin: auto;
+    }
+
+    .launch-box {
+      background: #101610;
+      border: 1px solid #1e2e1e;
+      padding: 14px;
+      margin-bottom: 20px;
+    }
+
+    input {
+      width: 100%;
+      padding: 8px;
+      margin-top: 8px;
+      background: #0b0f0b;
+      border: 1px solid #1e2e1e;
+      color: #eaffea;
     }
 
     .market-item {
-      background: #0e1733;
-      padding: 15px;
-      margin-top: 10px;
-      border-radius: 8px;
-      border-left: 4px solid #1f6bff;
+      background: #101610;
+      border: 1px solid #1e2e1e;
+      padding: 12px;
+      margin-bottom: 10px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .token-name {
+      font-weight: bold;
+      color: #7cff9b;
+    }
+
+    .stats {
+      font-size: 13px;
+      opacity: 0.85;
     }
 
     .footer {
       position: fixed;
       bottom: 10px;
-      right: 15px;
+      right: 12px;
       font-size: 12px;
-      color: #5c7cff;
-      opacity: 0.8;
+      opacity: 0.6;
     }
   </style>
 </head>
 
 <body>
 
-  <h1>Reeko</h1>
-  <p>Fund creators. Trade trust. Price attention.</p>
+  <header>
+    <h1>Reeko</h1>
+    <button onclick="connectWallet()">Connect</button>
+  </header>
 
-  <button onclick="connectWallet()">Connect Wallet</button>
-  <p id="wallet">Not connected</p>
+  <div class="container">
+    <p id="wallet">Not connected</p>
 
-  <!-- Launch Section -->
-  <div class="card">
-    <h3>Launch Creator Token</h3>
+    <div class="launch-box">
+      <strong>Launch Creator Token</strong><br />
+      <input id="name" placeholder="Token name" />
+      <input id="symbol" placeholder="Symbol" />
+      <input id="supply" placeholder="Total supply" />
+      <button onclick="launchToken()" style="margin-top:10px;">Create</button>
+    </div>
 
-    <input id="name" placeholder="Token Name" /><br /><br />
-    <input id="symbol" placeholder="Token Symbol" /><br /><br />
-    <input id="supply" placeholder="Total Supply" /><br /><br />
-
-    <button onclick="launchToken()">Create Token</button>
-  </div>
-
-  <!-- Market -->
-  <div class="card">
-    <h3>Creator Market</h3>
     <div id="market"></div>
   </div>
 
-  <div class="footer">© Reeko</div>
+  <div class="footer">© reeko</div>
 
   <script>
     let tokens = [];
@@ -104,20 +124,20 @@
         if (window.solana && window.solana.isPhantom) {
           const res = await window.solana.connect();
           document.getElementById("wallet").innerText =
-            "Connected (Phantom): " + res.publicKey.toString();
+            "Connected: " + res.publicKey.toString();
           return;
         }
 
         if (window.solflare) {
           await window.solflare.connect();
           document.getElementById("wallet").innerText =
-            "Connected (Solflare): " + window.solflare.publicKey.toString();
+            "Connected: " + window.solflare.publicKey.toString();
           return;
         }
 
-        alert("Install Phantom or Solflare wallet");
+        alert("Install Phantom or Solflare");
       } catch {
-        alert("Wallet connection cancelled");
+        alert("Connection cancelled");
       }
     }
 
@@ -126,17 +146,13 @@
       const symbol = document.getElementById("symbol").value;
       const supply = document.getElementById("supply").value;
 
-      if (!name || !symbol || !supply) {
-        alert("Fill all fields");
-        return;
-      }
+      if (!name || !symbol || !supply) return;
 
       const trust = Math.floor(Math.random() * 100);
       const attention = Math.floor(Math.random() * 100);
-      const price = ((trust + attention) / 20).toFixed(2);
+      const price = ((trust + attention) / 15).toFixed(3);
 
-      const token = { name, symbol, trust, attention, price };
-      tokens.push(token);
+      tokens.unshift({ name, symbol, trust, attention, price });
       renderMarket();
 
       document.getElementById("name").value = "";
@@ -151,10 +167,13 @@
       tokens.forEach(t => {
         market.innerHTML += `
           <div class="market-item">
-            <strong>${t.name} (${t.symbol})</strong><br />
-            Trust: ${t.trust}<br />
-            Attention: ${t.attention}<br />
-            Price: $${t.price}
+            <div>
+              <div class="token-name">${t.name} (${t.symbol})</div>
+              <div class="stats">
+                Trust: ${t.trust} | Attention: ${t.attention}
+              </div>
+            </div>
+            <div>$${t.price}</div>
           </div>
         `;
       });
