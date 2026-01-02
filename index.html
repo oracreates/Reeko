@@ -1,78 +1,113 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <title>Reeko</title>
-    <script src="https://unpkg.com/@solana/web3.js@latest/lib/index.iife.min.js"></script>
-    <style>
-      body {
-        font-family: Arial, sans-serif;
-        background: #0b0b0f;
-        color: white;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        height: 100vh;
-      }
-      button {
-        padding: 12px 20px;
-        font-size: 16px;
-        border: none;
-        border-radius: 8px;
-        cursor: pointer;
-        background: #6c5cff;
-        color: white;
-      }
-    </style>
-  </head>
+<head>
+  <meta charset="UTF-8" />
+  <title>Reeko – Internet Capital Markets</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-  <body>
-    <h1>Reeko</h1>
-    <p>Invest in creators early</p>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #0f0f14;
+      color: white;
+      padding: 20px;
+    }
+
+    h1 {
+      color: #7cffc4;
+    }
+
+    button {
+      padding: 10px 16px;
+      background: #7cffc4;
+      border: none;
+      cursor: pointer;
+      margin-top: 10px;
+      font-weight: bold;
+    }
+
+    input {
+      padding: 8px;
+      width: 100%;
+      max-width: 300px;
+    }
+
+    .card {
+      background: #1a1a24;
+      padding: 20px;
+      margin-top: 20px;
+      border-radius: 8px;
+    }
+  </style>
+</head>
+
+<body>
+
+  <h1>Reeko</h1>
+  <p>Fund creators. Trade trust. Build the future.</p>
 
   <button onclick="connectWallet()">Connect Wallet</button>
+  <p id="wallet">Not connected</p>
 
-<p id="wallet"></p>
+  <div class="card">
+    <button onclick="showLaunch()">Launch Creator Token</button>
 
-<br /><br />
+    <div id="launch" style="display:none; margin-top:20px;">
+      <input id="name" placeholder="Token Name" /><br /><br />
+      <input id="symbol" placeholder="Token Symbol" /><br /><br />
+      <input id="supply" placeholder="Total Supply" /><br /><br />
+      <button onclick="launchToken()">Create Token</button>
+    </div>
+  </div>
 
-<button onclick="showLaunch()">Launch Creator Token</button>
+  <script>
+    async function connectWallet() {
+      try {
+        // Phantom
+        if (window.solana && window.solana.isPhantom) {
+          const res = await window.solana.connect();
+          document.getElementById("wallet").innerText =
+            "Connected (Phantom): " + res.publicKey.toString();
+          return;
+        }
 
-<div id="launch" style="display:none; margin-top:20px;">
-  <input id="name" placeholder="Token Name" /><br /><br />
-  <input id="symbol" placeholder="Token Symbol" /><br /><br />
-  <input id="supply" placeholder="Total Supply" /><br /><br />
-  <button onclick="launchToken()">Create Token</button>
-</div>
+        // Solflare
+        if (window.solflare) {
+          await window.solflare.connect();
+          document.getElementById("wallet").innerText =
+            "Connected (Solflare): " + window.solflare.publicKey.toString();
+          return;
+        }
 
-<script>
-  async function connectWallet() {
-    if (window.solana && window.solana.isPhantom) {
-      const response = await window.solana.connect();
-      document.getElementById("wallet").innerText =
-        "Connected: " + response.publicKey.toString();
-    } else {
-      alert("Please install Phantom Wallet");
+        alert("Please install Phantom or Solflare wallet");
+      } catch (err) {
+        alert("Wallet connection cancelled");
+      }
     }
-  }
 
-  function showLaunch() {
-    document.getElementById("launch").style.display = "block";
-  }
+    function showLaunch() {
+      document.getElementById("launch").style.display = "block";
+    }
 
-  function launchToken() {
-    const name = document.getElementById("name").value;
-    const symbol = document.getElementById("symbol").value;
-    const supply = document.getElementById("supply").value;
+    function launchToken() {
+      const name = document.getElementById("name").value;
+      const symbol = document.getElementById("symbol").value;
+      const supply = document.getElementById("supply").value;
 
-    alert(
-      "Token Created (UI only)\n\n" +
-      "Name: " + name +
-      "\nSymbol: " + symbol +
-      "\nSupply: " + supply
-    );
-  }
-</script>
-  </body>
+      if (!name || !symbol || !supply) {
+        alert("Fill all fields");
+        return;
+      }
+
+      alert(
+        "Token Created (MVP UI)\n\n" +
+        "Name: " + name +
+        "\nSymbol: " + symbol +
+        "\nSupply: " + supply +
+        "\n\nNext: On-chain creation"
+      );
+    }
+  </script>
+
+</body>
 </html>
