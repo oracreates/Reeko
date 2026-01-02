@@ -1,261 +1,725 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<title>Reeko</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Reeko — The People's Market (Simulation)</title>
+
+<!-- Chart.js CDN -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <style>
-body {
-  margin: 0;
-  font-family: Arial, sans-serif;
-  background: #0b0f0b;
-  color: #eaffea;
-}
-
-header {
-  padding: 14px 16px;
-  border-bottom: 1px solid #1e2e1e;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-header h1 {
-  color: #7cff9b;
-  margin: 0;
-}
-
-.nav button {
-  background: none;
-  color: #7cff9b;
-  border: 1px solid #1e2e1e;
-  margin-left: 6px;
-  padding: 6px 10px;
-  cursor: pointer;
-}
-
-.nav button.active {
-  background: #7cff9b;
-  color: #0b0f0b;
-}
-
-.container {
-  padding: 16px;
-  max-width: 780px;
-  margin: auto;
-}
-
-.box {
-  background: #101610;
-  border: 1px solid #1e2e1e;
-  padding: 14px;
-  margin-bottom: 20px;
-}
-
-input {
-  width: 100%;
-  padding: 8px;
-  margin-top: 8px;
-  background: #0b0f0b;
-  border: 1px solid #1e2e1e;
-  color: #eaffea;
-}
-
-.market-item {
-  background: #101610;
-  border: 1px solid #1e2e1e;
-  padding: 12px;
-  margin-bottom: 10px;
-  display: flex;
-  justify-content: space-between;
-}
-
-.token-name {
-  font-weight: bold;
-  color: #7cff9b;
-}
-
-.footer {
-  position: fixed;
-  bottom: 10px;
-  right: 12px;
-  font-size: 12px;
-  opacity: 0.6;
-}
-
-.hidden { display:none; }
+  :root{
+    --bg:#07080a; --panel:#0f1720; --muted:#9aa3ad; --accent:#22c55e; --danger:#ef4444; --gold:#facc15;
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0; font-family:Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+    background:linear-gradient(180deg,#020617 0%, #071029 100%); color:#e6eef5; -webkit-font-smoothing:antialiased;
+  }
+  header{background:linear-gradient(90deg,var(--panel), #071026); padding:14px 20px; display:flex; align-items:center; justify-content:space-between; border-bottom:1px solid rgba(255,255,255,0.03)}
+  header h1{margin:0; color:var(--accent); font-weight:700}
+  nav a{color:var(--muted); margin-left:12px; text-decoration:none; font-weight:600}
+  nav a.active, nav a:hover{color:#fff}
+  .wrap{max-width:1100px; margin:20px auto; padding:0 16px}
+  .grid{display:grid; grid-template-columns: 1fr 360px; gap:18px; align-items:start}
+  .full{grid-column: 1/3}
+  .panel{background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01)); border:1px solid rgba(255,255,255,0.03); padding:14px; border-radius:10px; box-shadow:0 6px 18px rgba(2,6,23,0.6)}
+  .title{font-size:16px; color:var(--muted); margin-bottom:8px}
+  .row{display:flex; gap:8px; align-items:center}
+  .coin-card{display:flex; justify-content:space-between; align-items:center; padding:10px; border-radius:8px; margin-bottom:8px; background:linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.005)); border:1px solid rgba(255,255,255,0.02)}
+  .coin-left{display:flex; gap:12px; align-items:center}
+  .coin-symbol{width:48px; height:48px; border-radius:8px; background:rgba(255,255,255,0.03); display:flex; align-items:center; justify-content:center; font-weight:700; color:var(--accent)}
+  .coin-meta{line-height:1}
+  .coin-name{font-weight:700; font-size:14px}
+  .coin-price{font-weight:800; font-size:16px}
+  .controls{display:flex; gap:8px; align-items:center}
+  input[type=number], select{background:#071022; color:#e6eef5; border:1px solid rgba(255,255,255,0.03); padding:6px 8px; border-radius:6px; width:90px}
+  .btn{padding:8px 10px; border-radius:8px; cursor:pointer; font-weight:700; border:0}
+  .btn-long{background:linear-gradient(180deg,var(--accent), #16a34a); color:#04110a}
+  .btn-short{background:linear-gradient(180deg,var(--danger), #b91c1c); color:#fff}
+  .small{font-size:12px; color:var(--muted)}
+  .stats{display:flex; gap:12px; margin-top:8px}
+  .stat{background:rgba(255,255,255,0.02); padding:8px 12px; border-radius:8px; min-width:120px}
+  canvas{background:transparent; border-radius:8px}
+  .position-card{display:flex; justify-content:space-between; padding:10px; border-radius:8px; margin-bottom:8px; border:1px solid rgba(255,255,255,0.03); background:linear-gradient(180deg, rgba(255,255,255,0.01), transparent)}
+  .green{color:var(--accent); font-weight:800}
+  .red{color:var(--danger); font-weight:700}
+  .badge{display:inline-block; padding:4px 8px; background:var(--gold); color:#041018; border-radius:999px; font-weight:700; margin-left:6px; font-size:12px}
+  .feed{max-height:180px; overflow:auto}
+  .feed-item{padding:8px; margin-bottom:8px; border-radius:8px; background:linear-gradient(90deg, rgba(255,255,255,0.01), rgba(255,255,255,0.005)); border-left:4px solid rgba(255,255,255,0.02)}
+  footer {text-align:right; color:var(--muted); font-size:12px; padding:12px 20px}
+  /* admin */
+  .admin-form input[type=text], .admin-form input[type=number]{width:100%; padding:8px; margin-bottom:8px; border-radius:6px; border:1px solid rgba(255,255,255,0.03); background:#071022; color:#e6eef5}
+  .admin-row{display:flex; gap:8px}
+  /* responsive */
+  @media (max-width:900px){ .grid{grid-template-columns:1fr; } .full{grid-column:auto} input[type=number], select{width:100%} .controls{flex-direction:column; align-items:stretch} }
 </style>
 </head>
-
 <body>
 
 <header>
-<h1>Reeko</h1>
-<div class="nav">
-  <button id="nav-create" onclick="showPage('create')">Create</button>
-  <button id="nav-market" onclick="showPage('market')">Creator Coins</button>
-  <button id="nav-connect" onclick="showPage('connect')">Connect</button>
-</div>
+  <h1>Reeko</h1>
+  <nav>
+    <a id="nav-market" class="active" href="#market" onclick="show('market')">Market</a>
+    <a id="nav-portfolio" href="#portfolio" onclick="show('portfolio')">Portfolio</a>
+    <a id="nav-creators" href="#creators" onclick="show('creators')">Creators</a>
+    <a id="nav-leaderboard" href="#leaderboard" onclick="show('leaderboard')">Leaderboard</a>
+    <a id="nav-admin" href="#admin" onclick="show('admin')">Admin</a>
+  </nav>
 </header>
 
-<div class="container">
+<div class="wrap">
+  <div class="grid">
 
-<!-- CREATE -->
-<div id="page-create" class="box hidden">
-  <strong>Launch Creator Coin</strong>
-  <input id="name" placeholder="Creator / Project name" />
-  <input id="symbol" placeholder="Symbol" />
-  <button onclick="launchToken()">Launch</button>
-  <p id="creator-earnings"></p>
-</div>
+    <!-- LEFT: Market + Chart + Feed -->
+    <div>
 
-<!-- MARKET -->
-<div id="page-market">
-  <div class="box">
-    <strong>Creator Coins</strong>
-    <div id="market"></div>
-  </div>
-
-  <div class="box">
-    <strong>Your Portfolio</strong>
-    <div id="portfolio">No holdings</div>
-  </div>
-</div>
-
-<!-- CONNECT -->
-<div id="page-connect" class="box hidden">
-  <button onclick="connectWallet()">Connect Wallet</button>
-  <p id="wallet">Not connected</p>
-</div>
-
-</div>
-
-<div class="footer">© reeko</div>
-
-<script>
-const nameInput = document.getElementById("name");
-const symbolInput = document.getElementById("symbol");
-const marketDiv = document.getElementById("market");
-const portfolioDiv = document.getElementById("portfolio");
-const creatorEarnings = document.getElementById("creator-earnings");
-
-let tokens = [];
-let portfolio = {};
-
-const CREATOR_FEE = 0.03;
-const PLATFORM_FEE = 0.01;
-
-function showPage(p) {
-  document.querySelectorAll("[id^='page-']").forEach(e => e.classList.add("hidden"));
-  document.getElementById("page-" + p).classList.remove("hidden");
-
-  document.querySelectorAll(".nav button").forEach(b => b.classList.remove("active"));
-  document.getElementById("nav-" + p).classList.add("active");
-}
-showPage("market");
-
-async function connectWallet() {
-  if (window.solana?.isPhantom) {
-    const r = await window.solana.connect();
-    wallet.innerText = r.publicKey.toString();
-  } else if (window.solflare) {
-    await window.solflare.connect();
-    wallet.innerText = window.solflare.publicKey.toString();
-  } else {
-    alert("Install Phantom or Solflare");
-  }
-}
-
-function launchToken() {
-  const name = nameInput.value.trim();
-  const symbol = symbolInput.value.trim();
-
-  if (!name || !symbol) {
-    alert("Fill all fields");
-    return;
-  }
-
-  const token = {
-    name,
-    symbol,
-    price: 1,
-    creatorRevenue: 0
-  };
-
-  tokens.unshift(token);
-  startSimulation(token);
-
-  nameInput.value = "";
-  symbolInput.value = "";
-
-  renderAll();
-  showPage("market");
-}
-
-function buyToken(i) {
-  const t = tokens[i];
-  t.creatorRevenue += t.price * CREATOR_FEE;
-  t.price *= 1.05;
-
-  portfolio[t.symbol] = portfolio[t.symbol] || { qty: 0 };
-  portfolio[t.symbol].qty += 1;
-
-  renderAll();
-}
-
-function sellToken(i) {
-  const t = tokens[i];
-  if (!portfolio[t.symbol]) return;
-
-  t.price *= 0.95;
-  portfolio[t.symbol].qty -= 1;
-  if (portfolio[t.symbol].qty <= 0) delete portfolio[t.symbol];
-
-  renderAll();
-}
-
-function startSimulation(token) {
-  setInterval(() => {
-    token.price *= Math.random() > 0.5 ? 1.02 : 0.98;
-    token.creatorRevenue += token.price * 0.01;
-    renderAll();
-  }, 3000);
-}
-
-function renderMarket() {
-  marketDiv.innerHTML = "";
-  tokens.forEach((t,i) => {
-    marketDiv.innerHTML += `
-      <div class="market-item">
-        <div>
-          <div class="token-name">${t.name} (${t.symbol})</div>
-          Creator earnings: $${t.creatorRevenue.toFixed(2)}
+      <!-- MARKET -->
+      <div id="market" class="panel section">
+        <div class="title">Market</div>
+        <div class="stats">
+          <div class="stat"><div class="small">Balance</div><div id="balance" style="font-weight:900;font-size:18px">0</div></div>
+          <div class="stat"><div class="small">Equity</div><div id="equity" style="font-weight:900;font-size:18px">0</div></div>
+          <div class="stat"><div class="small">Platform Fees</div><div id="platformFees" style="font-weight:900;font-size:18px">0</div></div>
         </div>
-        <div>
-          $${t.price.toFixed(3)}<br/>
-          <button onclick="buyToken(${i})">Buy</button>
-          <button onclick="sellToken(${i})">Sell</button>
+
+        <div id="coinsList" style="margin-top:12px"></div>
+      </div>
+
+      <!-- CHART -->
+      <div class="panel section">
+        <div class="title">Selected Coin Chart</div>
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <div id="selectedName" style="font-weight:800">—</div>
+          <div class="small">Tick: <span id="tickCount">0</span></div>
+        </div>
+        <canvas id="mainChart" height="160"></canvas>
+      </div>
+
+      <!-- FEED -->
+      <div class="panel section">
+        <div class="title">Market Feed</div>
+        <div id="feed" class="feed"></div>
+      </div>
+
+    </div>
+
+    <!-- RIGHT: Portfolio / Creators / Leaderboard -->
+    <div>
+
+      <!-- PORTFOLIO -->
+      <div id="panel-portfolio" class="panel section">
+        <div class="title">Portfolio</div>
+        <div id="positionsList"></div>
+      </div>
+
+      <!-- CREATORS -->
+      <div id="panel-creators" class="panel section" style="display:none">
+        <div class="title">Creators</div>
+        <div id="creatorsList"></div>
+      </div>
+
+      <!-- LEADERBOARD -->
+      <div id="panel-leaderboard" class="panel section" style="display:none">
+        <div class="title">Leaderboard</div>
+        <div id="leaderboardList"></div>
+      </div>
+
+      <!-- ADMIN -->
+      <div id="panel-admin" class="panel section" style="display:none">
+        <div class="title">Admin Controls</div>
+        <div class="admin-form">
+          <input id="newCreatorName" type="text" placeholder="Creator name (e.g., XEU - Xeusthegreat)" />
+          <input id="newCreatorPrice" type="number" placeholder="Starting price (e.g., 100)" />
+          <div class="admin-row">
+            <button class="btn" onclick="addCreator()">Add Creator</button>
+            <button class="btn" onclick="resetSimulation()">Reset Simulation</button>
+          </div>
+
+          <hr style="margin:12px 0;border-color:rgba(255,255,255,0.03)"/>
+
+          <div class="small">Trigger event on a creator</div>
+          <select id="evtCreatorSelect" style="width:100%; margin-bottom:8px"></select>
+          <div class="admin-row">
+            <button class="btn" onclick="triggerEvent('positive')">Positive Event</button>
+            <button class="btn" onclick="triggerEvent('negative')">Negative Event</button>
+          </div>
         </div>
       </div>
-    `;
-  });
-}
 
-function renderPortfolio() {
-  portfolioDiv.innerHTML = "";
-  for (let s in portfolio) {
-    const t = tokens.find(x => x.symbol === s);
-    portfolioDiv.innerHTML += `<div>${s}: ${portfolio[s].qty} | Value: $${(t.price * portfolio[s].qty).toFixed(2)}</div>`;
+    </div>
+
+    <!-- FULL width: badges, help -->
+    <div class="full">
+      <div class="panel section">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <div><strong>Badges & Achievements</strong> <span class="small">(Earned automatically)</span></div>
+          <div><button class="btn" onclick="manualSnapshot()">Save Snapshot</button></div>
+        </div>
+        <div id="badges" style="margin-top:10px"></div>
+        <hr style="margin:12px 0;border-color:rgba(255,255,255,0.03)"/>
+        <div class="small">Help: This is a fully simulated market using fake points. Open long or short positions with leverage. Margin is allocated from your balance. Positions can be liquidated if losses exceed margin. Creators earn a cut of trade fees.</div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<footer>© Reeko — Simulation only. No real money involved.</footer>
+
+<script>
+/* =========================
+   Reeko Simulation — All-in-one
+   Features:
+   - Long / Short perp-style positions with leverage
+   - Margin calculation, PnL, liquidations
+   - Creator rewards from fees
+   - Price simulation + events
+   - Chart, notifications, badges, admin controls
+   - Persistence via localStorage
+   ========================= */
+
+(() => {
+  // ======= CONFIG =======
+  const TICK_INTERVAL_MS = 4000;        // price update tick
+  const FEE_RATE = 0.005;              // 0.5% open/close fee on notional
+  const CREATOR_SHARE = 0.6;           // 60% of fees go to creator
+  const PLATFORM_SHARE = 0.4;          // 40% to platform
+  const LIQUIDATION_PENALTY = 0.02;    // 2% penalty on liquidation (taken from margin)
+  const DEFAULT_BALANCE = 10000;       // starting points
+  const MAX_HISTORY = 40;
+  const DEFAULT_LEVERAGE_OPTIONS = [1,2,3,5];
+
+  // ======= STORAGE KEYS =======
+  const STORAGE_KEY = 'reeko_sim_v1';
+
+  // ======= STATE =======
+  let state = {
+    balance: DEFAULT_BALANCE,
+    platformFees: 0,
+    tickCount: 0,
+    creators: [
+      {id:1, name:"XEU — Xeusthegreat", price:100, history:[100], creatorEarnings:0},
+      {id:2, name:"TUN — Tunde SaaS", price:100, history:[100], creatorEarnings:0},
+      {id:3, name:"FEM — FemTech", price:100, history:[100], creatorEarnings:0}
+    ],
+    positions: [], // each: { id, creatorId, type:'long'|'short', notional, entryPrice, leverage, margin, openTick }
+    badges: [],
+    notifications: []
+  };
+
+  // ======= UTIL =======
+  function saveState(){
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    } catch(e){ console.warn('Could not save state', e) }
   }
-  if (!portfolioDiv.innerHTML) portfolioDiv.innerText = "No holdings";
-}
+  function loadState(){
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if(raw) {
+        const s = JSON.parse(raw);
+        // basic validation & fallbacks
+        if(s && s.creators) state = Object.assign(state, s);
+      }
+    } catch(e){ console.warn('Cannot load state', e) }
+  }
 
-function renderAll() {
-  renderMarket();
-  renderPortfolio();
-}
+  function uid(prefix='id'){ return prefix + '_' + Math.random().toString(36).slice(2,9) }
+
+  // ======= NOTIFICATIONS & FEED =======
+  function pushFeed(msg){
+    const feed = document.getElementById('feed');
+    const node = document.createElement('div');
+    node.className = 'feed-item';
+    node.textContent = `[${new Date().toLocaleTimeString()}] ${msg}`;
+    feed.prepend(node);
+    // keep feed length manageable
+    while(feed.childNodes.length > 80) feed.removeChild(feed.lastChild);
+  }
+
+  // ======= RENDER =======
+  function renderAll(){
+    renderHeaderStats();
+    renderCoinsList();
+    renderPositions();
+    renderCreators();
+    renderLeaderboard();
+    renderBadges();
+    renderTickCount();
+    saveState();
+    updateChartIfSelected();
+  }
+
+  function renderHeaderStats(){
+    document.getElementById('balance').textContent = state.balance.toFixed(2);
+    document.getElementById('platformFees').textContent = state.platformFees.toFixed(2);
+    document.getElementById('equity').textContent = computeEquity().toFixed(2);
+  }
+
+  function computeEquity(){
+    // equity = balance + sum unrealized PnL (margin already deducted at open)
+    let unreal = 0;
+    state.positions.forEach(p => {
+      const c = findCreator(p.creatorId);
+      const pnl = computeUnrealizedPnl(p, c.price);
+      unreal += pnl;
+    });
+    return (state.balance + unreal);
+  }
+
+  function findCreator(id){
+    return state.creators.find(c=>c.id===id);
+  }
+
+  // Render coins and controls
+  function renderCoinsList(){
+    const container = document.getElementById('coinsList');
+    container.innerHTML = '';
+    state.creators.forEach(c => {
+      const card = document.createElement('div');
+      card.className = 'coin-card';
+      card.innerHTML = `
+        <div class="coin-left">
+          <div class="coin-symbol">${c.name.split(' ')[0]}</div>
+          <div class="coin-meta">
+            <div class="coin-name">${c.name}</div>
+            <div class="coin-price">${c.price.toFixed(2)} pts</div>
+            <div class="small">Creator rewards: ${c.creatorEarnings.toFixed(2)} pts</div>
+          </div>
+        </div>
+        <div class="controls">
+          <div style="display:flex;flex-direction:column;align-items:flex-end;">
+            <div style="display:flex; gap:6px;">
+              <input id="notional-${c.id}" type="number" placeholder="Notional" min="1"/>
+              <select id="lev-${c.id}">${DEFAULT_LEVERAGE_OPTIONS.map(l=>`<option value="${l}">${l}x</option>`).join('')}</select>
+            </div>
+            <div style="margin-top:8px;display:flex;gap:6px;">
+              <button class="btn btn-long long" onclick="openPositionUI(${c.id}, 'long')">Long</button>
+              <button class="btn btn-short short" onclick="openPositionUI(${c.id}, 'short')">Short</button>
+              <button class="btn" onclick="selectCreator(${c.id})" style="background:transparent;border:1px solid rgba(255,255,255,0.03);">View</button>
+            </div>
+          </div>
+        </div>
+      `;
+      container.appendChild(card);
+    });
+  }
+
+  // Render positions
+  function computeUnrealizedPnl(pos, currentPrice){
+    // pos.notional = notional size (currency) invested (contract notional)
+    // contracts = notional / entryPrice
+    // For long: pnl = contracts * (currentPrice - entryPrice)
+    // For short: pnl = contracts * (entryPrice - currentPrice)
+    const entry = pos.entryPrice;
+    const contracts = pos.notional / entry;
+    const raw = (pos.type==='long') ? (contracts * (currentPrice - entry)) : (contracts * (entry - currentPrice));
+    return raw;
+  }
+
+  function renderPositions(){
+    const list = document.getElementById('positionsList');
+    list.innerHTML = '';
+    if(state.positions.length === 0) {
+      list.innerHTML = '<div class="small">No open positions</div>';
+      return;
+    }
+    state.positions.forEach((p, idx) => {
+      const c = findCreator(p.creatorId);
+      const pnl = computeUnrealizedPnl(p, c.price);
+      const pnlClass = pnl>=0 ? 'green' : 'red';
+      const posDiv = document.createElement('div');
+      posDiv.className = 'position-card';
+      posDiv.innerHTML = `
+        <div>
+          <div style="font-weight:800">${c.name} <span class="small">(${p.type.toUpperCase()})</span></div>
+          <div class="small">Entry: ${p.entryPrice.toFixed(2)} | Notional: ${p.notional.toFixed(2)} | Leverage: ${p.leverage}x</div>
+          <div class="small">Margin locked: ${p.margin.toFixed(2)}</div>
+        </div>
+        <div style="text-align:right">
+          <div class="${pnlClass}" style="font-weight:800">${pnl>=0?'+':''}${pnl.toFixed(2)} pts</div>
+          <div style="margin-top:8px"><button class="btn" onclick="closePosition('${p.id}')">Close</button></div>
+        </div>
+      `;
+      list.appendChild(posDiv);
+    });
+  }
+
+  // Creators list (right panel)
+  function renderCreators(){
+    const div = document.getElementById('creatorsList');
+    if(!div) return;
+    div.innerHTML = '';
+    state.creators.forEach(c => {
+      const el = document.createElement('div');
+      el.className = 'card';
+      el.innerHTML = `<div style="display:flex;justify-content:space-between;align-items:center">
+        <div>
+          <div style="font-weight:800">${c.name} <span class="badge">${c.creatorEarnings.toFixed(0)} pts</span></div>
+          <div class="small">Price: ${c.price.toFixed(2)}</div>
+        </div>
+        <div style="text-align:right">
+          <div class="small">History: ${c.history.length} ticks</div>
+          <button class="btn" onclick="triggerEventFor(${c.id}, 'positive')">+ Viral</button>
+          <button class="btn" onclick="triggerEventFor(${c.id}, 'negative')">- Scandal</button>
+        </div>
+      </div>`;
+      div.appendChild(el);
+    });
+  }
+
+  // Leaderboard
+  function renderLeaderboard(){
+    const list = document.getElementById('leaderboardList');
+    if(!list) return;
+    list.innerHTML = '';
+    // Sort creators by creatorEarnings
+    const sorted = state.creators.slice().sort((a,b)=>b.creatorEarnings - a.creatorEarnings);
+    sorted.forEach((c,i) => {
+      const row = document.createElement('div');
+      row.className = 'feed-item';
+      row.innerHTML = `${i+1}. <strong>${c.name}</strong> — Creator rewards: ${c.creatorEarnings.toFixed(2)} pts`;
+      list.appendChild(row);
+    });
+  }
+
+  // Badges
+  function renderBadges(){
+    const root = document.getElementById('badges');
+    root.innerHTML = '';
+    state.badges.forEach(b => {
+      const n = document.createElement('span');
+      n.className = 'badge';
+      n.textContent = b;
+      root.appendChild(n);
+    });
+  }
+
+  // Tick count
+  function renderTickCount(){
+    document.getElementById('tickCount').textContent = state.tickCount;
+  }
+
+  // ======= CHART (single main chart showing selected creator history) =======
+  let selectedCreatorId = state.creators[0].id;
+  const ctx = document.getElementById('mainChart').getContext('2d');
+  let mainChart = new Chart(ctx, {
+    type:'line',
+    data:{
+      labels: state.creators[0].history.map((_,i)=>i),
+      datasets: state.creators.map((c, idx) => ({
+        label: c.name,
+        data: c.history.slice(),
+        borderColor: idx===0? '#22c55e' : idx===1? '#3b82f6' : '#f97316',
+        backgroundColor: 'rgba(255,255,255,0.02)',
+        tension: 0.25,
+        pointRadius: 0,
+        borderWidth: 2
+      }))
+    },
+    options:{
+      responsive:true,
+      maintainAspectRatio:false,
+      scales:{ y:{ beginAtZero:false } },
+      plugins:{ legend:{ display:false } }
+    }
+  });
+
+  function updateChartIfSelected(){
+    // Keep datasets in sync with creators history
+    mainChart.data.labels = state.creators[0].history.map((_,i)=>i);
+    mainChart.data.datasets.forEach((ds, idx) => {
+      ds.data = state.creators[idx]?.history.slice() || [];
+      ds.label = state.creators[idx]?.name || ds.label;
+    });
+    mainChart.update();
+    // show selected name
+    document.getElementById('selectedName').textContent = (findCreator(selectedCreatorId) || {name:'—'}).name;
+  }
+
+  function selectCreator(id){
+    selectedCreatorId = id;
+    // no separate view — chart shows all but selected name updates
+    updateChartIfSelected();
+    show('market');
+  }
+
+  // ======= TRADING LOGIC =======
+  function openPositionUI(creatorId, type){
+    const notionalInput = document.getElementById(`notional-${creatorId}`);
+    const levInput = document.getElementById(`lev-${creatorId}`);
+    const notional = Number(notionalInput?.value) || 0;
+    const leverage = Number(levInput?.value) || 1;
+    if(notional <= 0) return alert('Enter notional (how much notional exposure you want).');
+
+    openPosition(creatorId, type, notional, leverage);
+    notionalInput.value = '';
+  }
+
+  function openPosition(creatorId, type, notional, leverage){
+    const creator = findCreator(creatorId);
+    if(!creator) return alert('Creator not found');
+
+    // margin = notional / leverage
+    const margin = notional / leverage;
+    const openFee = notional * FEE_RATE;
+
+    if(state.balance < (margin + openFee)) return alert('Insufficient balance for margin + fee');
+
+    // Deduct margin and fee from balance
+    state.balance -= (margin + openFee);
+    state.platformFees += openFee * PLATFORM_SHARE;
+    creator.creatorEarnings += openFee * CREATOR_SHARE;
+
+    const pos = {
+      id: uid('pos'),
+      creatorId,
+      type,
+      notional,
+      entryPrice: creator.price,
+      leverage,
+      margin,
+      openTick: state.tickCount
+    };
+    state.positions.push(pos);
+
+    pushFeed(`${type.toUpperCase()} opened on ${creator.name} — notional ${notional.toFixed(2)} @ ${creator.price.toFixed(2)} (lev ${leverage}x)`);
+    checkBadgesAfterOpen(pos);
+    renderAll();
+  }
+
+  function computePositionPnl(pos){
+    const c = findCreator(pos.creatorId);
+    return computeUnrealizedPnl(pos, c.price);
+  }
+
+  function closePosition(posId){
+    const idx = state.positions.findIndex(p=>p.id===posId);
+    if(idx===-1) return alert('Position not found');
+
+    const pos = state.positions[idx];
+    const c = findCreator(pos.creatorId);
+    const pnl = computeUnrealizedPnl(pos, c.price);
+    const closeFee = pos.notional * FEE_RATE;
+
+    // Release margin + pnl - closeFee
+    const release = pos.margin + pnl - closeFee;
+
+    // Update balances
+    state.balance += release;
+    state.platformFees += closeFee * PLATFORM_SHARE;
+    c.creatorEarnings += closeFee * CREATOR_SHARE;
+
+    // Remove position
+    state.positions.splice(idx, 1);
+
+    pushFeed(`Position closed on ${c.name} — PnL: ${pnl.toFixed(2)} pts`);
+    checkBadgesAfterClose(pnl);
+    renderAll();
+  }
+
+  // Liquidation: if unrealized PnL <= -margin => liquidate, user loses margin (minus tiny penalty distribution)
+  function checkLiquidations(){
+    for(let i = state.positions.length -1; i >=0; i--){
+      const pos = state.positions[i];
+      const c = findCreator(pos.creatorId);
+      const pnl = computeUnrealizedPnl(pos, c.price);
+      if(pnl <= -pos.margin){
+        // liquidate
+        const penalty = pos.margin * LIQUIDATION_PENALTY;
+        // platform keeps penalty, creator gets share of remaining fee-like
+        const remainder = pos.margin - penalty;
+        state.platformFees += penalty * PLATFORM_SHARE;
+        c.creatorEarnings += penalty * CREATOR_SHARE;
+        // position removed, no funds returned to user (margin eaten)
+        state.positions.splice(i,1);
+        pushFeed(`🔒 Liquidation: ${pos.type.toUpperCase()} on ${c.name} was liquidated. Margin lost.`);
+      }
+    }
+  }
+
+  // ======= PRICE ENGINE =======
+  function marketTick(){
+    state.tickCount++;
+    // For each creator: small random move + sentiment + occasional event
+    state.creators.forEach(c=>{
+      // random base (-3%..+3%)
+      const rnd = (Math.random()-0.5) * 0.06;
+      // small mean reversion toward 100 (optional)
+      const meanRevert = (100 - c.price) * 0.0005;
+      // aggregate
+      let delta = rnd + meanRevert;
+
+      // events probability
+      const chance = Math.random();
+      if(chance < 0.04){
+        // positive viral event
+        delta += 0.12;
+        pushFeed(`🚀 ${c.name} went viral!`);
+      } else if(chance > 0.96){
+        delta -= 0.12;
+        pushFeed(`⚠️ ${c.name} had negative press.`);
+      }
+
+      // price update
+      c.price = Math.max(0.1, c.price * (1 + delta));
+      // history
+      c.history.push(c.price);
+      if(c.history.length > MAX_HISTORY) c.history.shift();
+    });
+
+    // after price movement, update chart/positions and check liquidations
+    checkLiquidations();
+    renderAll();
+  }
+
+  // ======= EVENTS (admin) =======
+  function triggerEventFor(creatorId, type){
+    const c = findCreator(creatorId);
+    if(!c) return;
+    if(type === 'positive'){
+      c.price *= 1.15;
+      pushFeed(`Admin event: positive spike for ${c.name}`);
+    } else {
+      c.price *= 0.85;
+      pushFeed(`Admin event: negative spike for ${c.name}`);
+    }
+    // update history and redraw
+    c.history.push(c.price);
+    if(c.history.length > MAX_HISTORY) c.history.shift();
+    renderAll();
+  }
+
+  // UI admin trigger wrapper
+  window.triggerEventFor = triggerEventFor;
+
+  // ======= BADGES =======
+  function awardBadge(name){
+    if(!state.badges.includes(name)){
+      state.badges.push(name);
+      pushFeed(`🏅 Badge earned: ${name}`);
+    }
+  }
+  function checkBadgesAfterOpen(pos){
+    if(pos.notional >= 1000) awardBadge('Whale Hunter');
+    if(pos.leverage >= 5) awardBadge('High Leverage');
+  }
+  function checkBadgesAfterClose(pnl){
+    if(pnl >= 500) awardBadge('Big Winner');
+    if(pnl <= -500) awardBadge('Comeback Needed');
+  }
+
+  // ======= HELPERS =======
+  function addCreator(){
+    const name = document.getElementById('newCreatorName').value.trim();
+    const price = Number(document.getElementById('newCreatorPrice').value) || 100;
+    if(!name) return alert('Provide a creator name');
+    const id = Math.max(0,...state.creators.map(c=>c.id)) + 1;
+    const c = {id, name, price, history:[price], creatorEarnings:0};
+    state.creators.push(c);
+    populateAdminSelect();
+    pushFeed(`Creator added: ${name}`);
+    renderAll();
+    saveState();
+    document.getElementById('newCreatorName').value = '';
+    document.getElementById('newCreatorPrice').value = '';
+  }
+  window.addCreator = addCreator;
+
+  function resetSimulation(){
+    if(!confirm('Reset simulation and clear all data?')) return;
+    localStorage.removeItem(STORAGE_KEY);
+    location.reload();
+  }
+  window.resetSimulation = resetSimulation;
+
+  function triggerEvent(type){
+    const sel = document.getElementById('evtCreatorSelect');
+    const id = Number(sel.value);
+    if(!id) return alert('Select creator');
+    triggerEventFor(id, type);
+  }
+  window.triggerEvent = triggerEvent;
+
+  // ======= OPEN/CLOSE positions wrapper for UI =======
+  window.openPositionUI = function(creatorId, type){
+    // wrapper — defined earlier as openPositionUI but used in earlier versions; keep compatibility
+    const notionalInput = document.getElementById(`notional-${creatorId}`);
+    const levInput = document.getElementById(`lev-${creatorId}`);
+    const notional = Number(notionalInput?.value) || 0;
+    const leverage = Number(levInput?.value) || 1;
+    if(notional <= 0) return alert('Enter notional (how much notional exposure you want).');
+    openPosition(creatorId, type, notional, leverage);
+    notionalInput.value = '';
+  };
+
+  window.openPosition = openPosition;
+  window.closePosition = closePosition;
+
+  // ======= SELECT CREATOR (chart) =======
+  window.selectCreator = selectCreator;
+
+  // ======= Snapshot (manual save) =======
+  window.manualSnapshot = function(){
+    saveState();
+    pushFeed('Snapshot saved.');
+    alert('Saved to localStorage');
+  };
+
+  // ======= Persistence Boot =======
+  loadState();
+  // ensure creators have history arrays
+  state.creators.forEach(c => { if(!c.history) c.history = [c.price]; });
+
+  // Populate admin select
+  function populateAdminSelect(){
+    const sel = document.getElementById('evtCreatorSelect');
+    sel.innerHTML = '<option value="">Select creator</option>';
+    state.creators.forEach(c => {
+      const opt = document.createElement('option'); opt.value = c.id; opt.text = c.name;
+      sel.appendChild(opt);
+    });
+  }
+  populateAdminSelect();
+
+  // ======= Initial render and start ticks =======
+  renderAll();
+  updateChartIfSelected();
+
+  // Tick interval
+  const TICKER = setInterval(marketTick, TICK_INTERVAL_MS);
+
+  // Expose small functions for nav
+  window.show = function(panel){
+    // nav visuals
+    ['market','portfolio','creators','leaderboard','admin'].forEach(p=>{
+      const el = document.getElementById('panel-'+p);
+      if(el) el.style.display = (p === panel && panel!=='market') ? 'block' : (p!=='market') ? 'none' : el.style.display;
+      const nav = document.getElementById('nav-'+p);
+      if(nav) nav.classList.toggle('active', p === panel);
+    });
+    // market panel special handling: showMarket is default — simply show/hide right panels
+    document.getElementById('panel-portfolio').style.display = (panel==='portfolio') ? 'block' : 'none';
+    document.getElementById('panel-creators').style.display = (panel==='creators') ? 'block' : 'none';
+    document.getElementById('panel-leaderboard').style.display = (panel==='leaderboard') ? 'block' : 'none';
+    document.getElementById('panel-admin').style.display = (panel==='admin') ? 'block' : 'none';
+    // highlight nav
+    ['market','portfolio','creators','leaderboard','admin'].forEach(k=>{
+      const nav = document.getElementById('nav-'+k);
+      if(nav) nav.classList.toggle('active', k===panel);
+    });
+  };
+
+  // initial nav
+  show('market');
+
+  // Save state periodically (it also saves on renderAll)
+  setInterval(saveState, 5000);
+
+  // Done boot
+})();
 </script>
-
 </body>
 </html>
