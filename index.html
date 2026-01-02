@@ -31,20 +31,48 @@
     <h1>Reeko</h1>
     <p>Invest in creators early</p>
 
-    <button onclick="connectWallet()">Connect Wallet</button>
+  <button onclick="connectWallet()">Connect Wallet</button>
 
-    <p id="wallet"></p>
+<p id="wallet"></p>
 
-    <script>
-      async function connectWallet() {
-        if (window.solana && window.solana.isPhantom) {
-          const response = await window.solana.connect();
-          document.getElementById("wallet").innerText =
-            "Connected: " + response.publicKey.toString();
-        } else {
-          alert("Please install Phantom Wallet");
-        }
-      }
-    </script>
+<br /><br />
+
+<button onclick="showLaunch()">Launch Creator Token</button>
+
+<div id="launch" style="display:none; margin-top:20px;">
+  <input id="name" placeholder="Token Name" /><br /><br />
+  <input id="symbol" placeholder="Token Symbol" /><br /><br />
+  <input id="supply" placeholder="Total Supply" /><br /><br />
+  <button onclick="launchToken()">Create Token</button>
+</div>
+
+<script>
+  async function connectWallet() {
+    if (window.solana && window.solana.isPhantom) {
+      const response = await window.solana.connect();
+      document.getElementById("wallet").innerText =
+        "Connected: " + response.publicKey.toString();
+    } else {
+      alert("Please install Phantom Wallet");
+    }
+  }
+
+  function showLaunch() {
+    document.getElementById("launch").style.display = "block";
+  }
+
+  function launchToken() {
+    const name = document.getElementById("name").value;
+    const symbol = document.getElementById("symbol").value;
+    const supply = document.getElementById("supply").value;
+
+    alert(
+      "Token Created (UI only)\n\n" +
+      "Name: " + name +
+      "\nSymbol: " + symbol +
+      "\nSupply: " + supply
+    );
+  }
+</script>
   </body>
 </html>
