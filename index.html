@@ -2,164 +2,169 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Reeko</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
+  <title>$VIBECAT – The Meme Coin with Paws</title>
   <style>
+    * {margin:0;padding:0;box-sizing:border-box;font-family:'Poppins',sans-serif;}
     body {
-      margin: 0;
-      font-family: Arial, sans-serif;
-      background: #0f172a;
-      color: #e5e7eb;
+      background: radial-gradient(circle at top left, #8e2de2, #4a00e0);
+      color:#fff;
+      overflow-x:hidden;
     }
-
     header {
-      background: #020617;
-      padding: 15px;
-      text-align: center;
-      font-size: 22px;
-      font-weight: bold;
-      color: #22c55e;
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      padding:1.5rem 3rem;
+      background:rgba(255,255,255,0.05);
+      backdrop-filter:blur(10px);
+      position:sticky;
+      top:0;
+      z-index:10;
     }
-
-    #postBox {
-      max-width: 600px;
-      margin: 20px auto;
-      padding: 10px;
+    header h1 {font-size:1.6rem; letter-spacing:1px;}
+    nav a {
+      margin-left:1.5rem;
+      text-decoration:none;
+      color:#fff;
+      font-weight:500;
+      transition:0.3s;
     }
-
-    textarea {
-      width: 100%;
-      padding: 10px;
-      font-size: 16px;
-      border-radius: 6px;
-      border: none;
-      outline: none;
-      resize: none;
+    nav a:hover {color:#ff9ff3;}
+    .hero {
+      min-height:90vh;
+      display:flex;
+      flex-direction:column;
+      justify-content:center;
+      align-items:center;
+      text-align:center;
+      padding:2rem;
+      position:relative;
     }
-
-    button {
-      margin-top: 10px;
-      width: 100%;
-      padding: 10px;
-      background: #22c55e;
-      border: none;
-      border-radius: 6px;
-      font-size: 16px;
-      font-weight: bold;
-      cursor: pointer;
+    .hero img {
+      width:180px;
+      animation:float 4s ease-in-out infinite;
     }
-
-    button:hover {
-      background: #16a34a;
+    @keyframes float {
+      0% {transform:translateY(0);}
+      50% {transform:translateY(-20px);}
+      100% {transform:translateY(0);}
     }
-
-    #feed {
-      max-width: 600px;
-      margin: 20px auto;
+    .hero h2 {
+      font-size:2.8rem;
+      margin-top:1rem;
+      background:linear-gradient(90deg,#ff9ff3,#00f2fe);
+      -webkit-background-clip:text;
+      -webkit-text-fill-color:transparent;
     }
-
-    .post {
-      background: #020617;
-      padding: 15px;
-      border-radius: 8px;
-      margin-bottom: 15px;
-      position: relative;
+    .hero p {
+      max-width:500px;
+      margin:1rem auto 2rem;
+      font-size:1.1rem;
+      line-height:1.5;
     }
-
-    .like {
-      position: absolute;
-      top: 10px;
-      right: 15px;
-      cursor: pointer;
-      color: #94a3b8;
+    .buttons a {
+      display:inline-block;
+      margin:0.5rem;
+      padding:0.9rem 2rem;
+      border-radius:50px;
+      text-decoration:none;
+      font-weight:600;
+      background:linear-gradient(90deg,#00f2fe,#4facfe);
+      color:#fff;
+      transition:0.3s;
     }
-
-    .like:hover {
-      color: #f43f5e;
+    .buttons a:hover {transform:scale(1.05);}
+    section {
+      padding:4rem 2rem;
+      text-align:center;
     }
-
+    .tokenomics {
+      background:rgba(255,255,255,0.05);
+      border-top:1px solid rgba(255,255,255,0.1);
+      border-bottom:1px solid rgba(255,255,255,0.1);
+    }
+    .tokenomics h3 {font-size:2rem; margin-bottom:1.5rem;}
+    .tokenomics .grid {
+      display:grid;
+      grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
+      gap:1.5rem;
+      max-width:800px;
+      margin:0 auto;
+    }
+    .card {
+      background:rgba(255,255,255,0.08);
+      border-radius:20px;
+      padding:1.5rem;
+      transition:0.3s;
+    }
+    .card:hover {transform:translateY(-5px); background:rgba(255,255,255,0.15);}
     footer {
-      position: fixed;
-      bottom: 10px;
-      right: 15px;
-      font-size: 12px;
-      color: #64748b;
+      padding:2rem;
+      text-align:center;
+      font-size:0.9rem;
+      background:rgba(255,255,255,0.05);
     }
   </style>
 </head>
 <body>
+  <header>
+    <h1>$VIBECAT 🐾</h1>
+    <nav>
+      <a href="#about">About</a>
+      <a href="#tokenomics">Tokenomics</a>
+      <a href="#buy">Buy</a>
+    </nav>
+  </header>
 
-  <header>Reeko</header>
+  <section class="hero" id="about">
+    <img src="https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/72x72/1f63b.png" alt="VibeCat Mascot">
+    <h2>The Meme Coin with Paws</h2>
+    <p>
+      $VIBECAT is here to claw its way to the moon.  
+      Born from pure vibes and powered by community meows,  
+      this cat never sleeps – only stacks!
+    </p>
+    <div class="buttons" id="buy">
+      <a href="#">🐾 Buy $VIBECAT</a>
+      <a href="#">💬 Join Community</a>
+    </div>
+  </section>
 
-  <div id="postBox">
-    <textarea id="postInput" rows="3" maxlength="280" placeholder="Say something anonymously..."></textarea>
-    <button onclick="createPost()">Post</button>
-  </div>
+  <section class="tokenomics" id="tokenomics">
+    <h3>Tokenomics</h3>
+    <div class="grid">
+      <div class="card">
+        <h4>Total Supply</h4>
+        <p>1,000,000,000 $VIBECAT</p>
+      </div>
+      <div class="card">
+        <h4>Liquidity</h4>
+        <p>50% Locked 🔒</p>
+      </div>
+      <div class="card">
+        <h4>Community</h4>
+        <p>40% Airdropped 😸</p>
+      </div>
+      <div class="card">
+        <h4>Marketing</h4>
+        <p>10% For Memes 📸</p>
+      </div>
+    </div>
+  </section>
 
-  <div id="feed"></div>
+  <section>
+    <h3>Join the Vibe</h3>
+    <p>Follow us on socials to stay updated with the latest meowments.</p>
+    <div class="buttons">
+      <a href="#">🐦 Twitter</a>
+      <a href="#">💬 Telegram</a>
+      <a href="#">🎮 Discord</a>
+    </div>
+  </section>
 
-  <footer>© reeko</footer>
-
-  <!-- Firebase SDKs -->
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
-
-  <script>
-    // 🔑 YOUR FIREBASE CONFIG (STEP 3 DONE)
-    const firebaseConfig = {
-      apiKey: "AIzaSyAtJmFCjAFE3wH_db-ojUoqcrI57sX9hOY",
-      authDomain: "reeko-4747d.firebaseapp.com",
-      projectId: "reeko-4747d",
-      storageBucket: "reeko-4747d.firebasestorage.app",
-      messagingSenderId: "873146038678",
-      appId: "1:873146038678:web:56f0f7b208ccd167b745b7"
-    };
-
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.firestore();
-
-    function createPost() {
-      const text = document.getElementById("postInput").value.trim();
-      if (!text) return;
-
-      db.collection("posts").add({
-        text: text,
-        likes: 0,
-        time: firebase.firestore.FieldValue.serverTimestamp()
-      });
-
-      document.getElementById("postInput").value = "";
-    }
-
-    db.collection("posts")
-      .orderBy("likes", "desc")
-      .orderBy("time", "desc")
-      .onSnapshot(snapshot => {
-        const feed = document.getElementById("feed");
-        feed.innerHTML = "";
-
-        snapshot.forEach(doc => {
-          const post = doc.data();
-          const div = document.createElement("div");
-          div.className = "post";
-          div.innerHTML = `
-            ${post.text}
-            <div class="like" onclick="likePost('${doc.id}')">
-              ❤️ ${post.likes}
-            </div>
-          `;
-          feed.appendChild(div);
-        });
-      });
-
-    function likePost(id) {
-      const ref = db.collection("posts").doc(id);
-      ref.update({
-        likes: firebase.firestore.FieldValue.increment(1)
-      });
-    }
-  </script>
-
+  <footer>
+    <p>© 2026 $VIBECAT. Built by òra</p>
+  </footer>
 </body>
 </html>
