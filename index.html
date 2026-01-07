@@ -15,6 +15,8 @@ button { background:#ff6b6b; color:white; border:none; cursor:pointer; font-weig
 button:hover { background:#ff3b3b; }
 button:disabled { background:#ccc; cursor:not-allowed; }
 a { color:#ff6b6b; text-decoration:none; word-break:break-all; }
+.wallet { font-size:0.9rem; color:#555; margin-bottom:0.5rem; word-break:break-all; }
+.success { color:green; font-size:0.9rem; margin-top:0.5rem; }
 </style>
 </head>
 <body>
@@ -23,51 +25,40 @@ a { color:#ff6b6b; text-decoration:none; word-break:break-all; }
 
 <script>
 const app = document.getElementById("app");
-const PLATFORM_WALLET = "YOUR_PLATFORM_WALLET_PUBLIC_KEY_HERE"; // replace
-const PLATFORM_FEE_SOL = 0.0003; // fixed fee per tip ~ $0.1
+const PLATFORM_WALLET = "YOUR_PLATFORM_WALLET_PUBLIC_KEY_HERE"; // Replace with your mainnet wallet
+const PLATFORM_FEE_SOL = 0.0003; // platform fee ~ $0.1
 let wallet = null;
+const connection = new solanaWeb3.Connection(solanaWeb3.clusterApiUrl("mainnet-beta"), "confirmed");
 
 // ----- Multi-Wallet Connect -----
 async function connectWallet() {
-  if(!window.solana && !window.solflare && !window.glow && !window.slope && !window.sollet) {
-    return alert("Install a Solana wallet! Supported: Phantom, Solflare, Glow, Slope, Sollet...");
-  }
-
   try {
-    // Phantom
-    if(window.solana?.isPhantom) {
-      const res = await window.solana.connect();
-      wallet = res.publicKey;
-    }
-    // Solflare
-    else if(window.solflare?.isSolflare) {
-      const res = await window.solflare.connect();
-      wallet = res.publicKey;
-    }
-    // Glow
-    else if(window.glow?.isGlow) {
-      const res = await window.glow.connect();
-      wallet = res.publicKey;
-    }
-    // Slope
-    else if(window.slope?.isSlope) {
-      const res = await window.slope.connect();
-      wallet = res.publicKey;
-    }
-    // Sollet
-    else if(window.sollet?.isSollet) {
-      const res = await window.sollet.connect();
-      wallet = res.publicKey;
-    }
-    else {
-      alert("No supported wallet found!");
-    }
-
-    if(wallet) console.log("Connected to:", wallet.toString());
-    return wallet;
+    if(window.solana?.isPhantom) { wallet = (await window.solana.connect()).publicKey; return wallet; }
+    if(window.solflare?.isSolflare) { wallet = (await window.solflare.connect()).publicKey; return wallet; }
+    if(window.glow?.isGlow) { wallet = (await window.glow.connect()).publicKey; return wallet; }
+    if(window.slope?.isSlope) { wallet = (await window.slope.connect()).publicKey; return wallet; }
+    if(window.sollet?.isSollet) { wallet = (await window.sollet.connect()).publicKey; return wallet; }
+    alert("No supported wallet found! Install Phantom, Solflare, Glow, Slope, or Sollet.");
   } catch(err) {
     console.error(err);
     alert("Wallet connection failed.");
+  }
+}
+
+// ----- Send Transaction Multi-Wallet -----
+async function sendTransaction(tx) {
+  try {
+    if(window.solana?.isPhantom) return await window.solana.signAndSendTransaction(tx);
+    if(window.solflare?.isSolflare) return await window.solflare.signAndSendTransaction(tx);
+    if(window.glow?.isGlow) return await window.glow.signAndSendTransaction(tx);
+    if(window.slope?.isSlope) return await window.slope.signAndSendTransaction(tx);
+    if(window.sollet?.isSollet) {
+      await window.sollet.signTransaction(tx);
+      return await window.sollet.sendTransaction(tx, connection);
+    }
+  } catch(err) {
+    console.error(err);
+    alert("Transaction failed!");
   }
 }
 
@@ -87,6 +78,7 @@ function getParams() {
 function creatorPage() {
   app.innerHTML = `
     <h2>Create Sipps Profile</h2>
+    <div class="wallet" id="walletDisplay">Wallet: Not connected</div>
     <input id="name" placeholder="Display Name (e.g. Jane)" />
     <input id="price" placeholder="Coffee price (SOL)" />
     <button id="connect">Connect Wallet</button>
@@ -97,12 +89,14 @@ function creatorPage() {
   const connectBtn = document.getElementById("connect");
   const createBtn = document.getElementById("create");
   const linkEl = document.getElementById("link");
+  const walletDisplay = document.getElementById("walletDisplay");
 
   connectBtn.onclick = async () => {
     await connectWallet();
     if(wallet) {
       createBtn.disabled = false;
       connectBtn.textContent = "Wallet Connected ✅";
+      walletDisplay.textContent = "Wallet: " + wallet.toString();
     }
   };
 
@@ -111,9 +105,15 @@ function creatorPage() {
     const price = parseFloat(document.getElementById("price").value);
     if(!name || !price) return alert("Fill all fields");
 
-    const link = `${window.location.origin}/#to=${wallet}&name=${encodeURIComponent(name)}&price=${price}`;
-    linkEl.innerHTML = `Share your link:<br><a href="${link}">${link}</a>`;
-    alert("Profile created! Copy and share the link.");
+    const link = `${window.location.origin}/#to=${wallet.toString()}&name=${encodeURIComponent(name)}&price=${price}`;
+    linkEl.innerHTML = `Share your link:<br><a href="${link}" target="_blank">${link}</a>`;
+    navigator.clipboard.writeText(link).then(()=>{ 
+      const success = document.createElement("div");
+      success.className = "success";
+      success.textContent = "Link copied to clipboard!";
+      linkEl.appendChild(success);
+    });
+    alert("Profile created! Link copied, share anywhere.");
   };
 }
 
@@ -122,14 +122,17 @@ async function supporterPage(params) {
   app.innerHTML = `
     <h2>Support ${params.name || "Creator"}</h2>
     <p>Price: ${params.price} SOL</p>
+    <div class="wallet" id="walletDisplay">Wallet: Not connected</div>
     <button id="pay">Buy Coffee ☕</button>
   `;
 
+  const walletDisplay = document.getElementById("walletDisplay");
   document.getElementById("pay").onclick = async () => {
     await connectWallet();
     if(!wallet) return;
+    walletDisplay.textContent = "Wallet: " + wallet.toString();
 
-    const transaction = new solanaWeb3.Transaction().add(
+    const tx = new solanaWeb3.Transaction().add(
       solanaWeb3.SystemProgram.transfer({
         fromPubkey: wallet,
         toPubkey: new solanaWeb3.PublicKey(params.to),
@@ -142,12 +145,9 @@ async function supporterPage(params) {
       })
     );
 
-    try {
-      const { signature } = await window.solana.signAndSendTransaction(transaction);
-      alert("☕ Payment sent! Tx: " + signature);
-    } catch(err) {
-      console.error(err);
-      alert("Transaction failed!");
+    const result = await sendTransaction(tx);
+    if(result?.signature) {
+      alert("☕ Payment sent! Tx: " + result.signature);
     }
   };
 }
