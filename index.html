@@ -6,12 +6,15 @@
 <title>Sipps - Support Creators</title>
 <script src="https://cdn.jsdelivr.net/npm/@solana/web3.js@1.73.0/lib/index.iife.min.js"></script>
 <style>
-body { font-family:sans-serif; background:#fff7ed; display:flex; justify-content:center; align-items:center; min-height:100vh; }
-.box { background:white; padding:2rem; border-radius:16px; width:360px; text-align:center; box-shadow:0 8px 20px rgba(0,0,0,0.1); }
-input, button { width:100%; padding:.7rem; margin:.4rem 0; border-radius:8px; border:1px solid #ccc; }
-button { background:#ff6b6b; color:white; border:none; cursor:pointer; }
+body { font-family:'Segoe UI', sans-serif; background:#fff7ed; display:flex; justify-content:center; align-items:center; min-height:100vh; margin:0; }
+.box { background:white; padding:2rem; border-radius:16px; width:360px; text-align:center; box-shadow:0 8px 25px rgba(0,0,0,0.1); transition:0.3s; }
+.box h2 { margin-bottom:1rem; color:#333; }
+input, button { width:100%; padding:.7rem; margin:.5rem 0; border-radius:8px; border:1px solid #ccc; font-size:1rem; }
+input:focus { outline:none; border-color:#ff6b6b; }
+button { background:#ff6b6b; color:white; border:none; cursor:pointer; font-weight:600; transition:0.3s; }
 button:hover { background:#ff3b3b; }
 button:disabled { background:#ccc; cursor:not-allowed; }
+a { color:#ff6b6b; text-decoration:none; word-break:break-all; }
 </style>
 </head>
 <body>
@@ -20,24 +23,58 @@ button:disabled { background:#ccc; cursor:not-allowed; }
 
 <script>
 const app = document.getElementById("app");
-const PLATFORM_WALLET = "YOUR_PLATFORM_WALLET_PUBLIC_KEY_HERE"; // replace with your wallet
-const PLATFORM_FEE_SOL = 0.0003; // adjust ~ $0.1 in SOL
-
+const PLATFORM_WALLET = "YOUR_PLATFORM_WALLET_PUBLIC_KEY_HERE"; // replace
+const PLATFORM_FEE_SOL = 0.0003; // fixed fee per tip ~ $0.1
 let wallet = null;
 
-// ----- Helpers -----
+// ----- Multi-Wallet Connect -----
 async function connectWallet() {
-  if(!window.solana) return alert("Install Phantom wallet!");
+  if(!window.solana && !window.solflare && !window.glow && !window.slope && !window.sollet) {
+    return alert("Install a Solana wallet! Supported: Phantom, Solflare, Glow, Slope, Sollet...");
+  }
+
   try {
-    const res = await window.solana.connect();
-    wallet = res.publicKey;
+    // Phantom
+    if(window.solana?.isPhantom) {
+      const res = await window.solana.connect();
+      wallet = res.publicKey;
+    }
+    // Solflare
+    else if(window.solflare?.isSolflare) {
+      const res = await window.solflare.connect();
+      wallet = res.publicKey;
+    }
+    // Glow
+    else if(window.glow?.isGlow) {
+      const res = await window.glow.connect();
+      wallet = res.publicKey;
+    }
+    // Slope
+    else if(window.slope?.isSlope) {
+      const res = await window.slope.connect();
+      wallet = res.publicKey;
+    }
+    // Sollet
+    else if(window.sollet?.isSollet) {
+      const res = await window.sollet.connect();
+      wallet = res.publicKey;
+    }
+    else {
+      alert("No supported wallet found!");
+    }
+
+    if(wallet) console.log("Connected to:", wallet.toString());
     return wallet;
-  } catch(err) { console.error(err); alert("Wallet connection failed"); }
+  } catch(err) {
+    console.error(err);
+    alert("Wallet connection failed.");
+  }
 }
 
+// ----- URL Params -----
 function getParams() {
   const url = new URL(window.location.href);
-  const params = url.hash.substring(1); // remove #
+  const params = url.hash.substring(1);
   const data = {};
   params.split("&").forEach(p=>{
     const [k,v] = p.split("=");
@@ -54,27 +91,29 @@ function creatorPage() {
     <input id="price" placeholder="Coffee price (SOL)" />
     <button id="connect">Connect Wallet</button>
     <button id="create" disabled>Create Profile</button>
-    <p id="link" style="word-break:break-all;"></p>
+    <p id="link"></p>
   `;
-  
+
   const connectBtn = document.getElementById("connect");
   const createBtn = document.getElementById("create");
   const linkEl = document.getElementById("link");
-  
+
   connectBtn.onclick = async () => {
     await connectWallet();
-    if(wallet) createBtn.disabled = false;
-    connectBtn.textContent = "Wallet Connected";
+    if(wallet) {
+      createBtn.disabled = false;
+      connectBtn.textContent = "Wallet Connected ✅";
+    }
   };
-  
+
   createBtn.onclick = () => {
     const name = document.getElementById("name").value.trim();
     const price = parseFloat(document.getElementById("price").value);
     if(!name || !price) return alert("Fill all fields");
-    
+
     const link = `${window.location.origin}/#to=${wallet}&name=${encodeURIComponent(name)}&price=${price}`;
-    linkEl.textContent = `Share this link: ${link}`;
-    alert("Profile created! Copy the link above to share.");
+    linkEl.innerHTML = `Share your link:<br><a href="${link}">${link}</a>`;
+    alert("Profile created! Copy and share the link.");
   };
 }
 
@@ -83,13 +122,13 @@ async function supporterPage(params) {
   app.innerHTML = `
     <h2>Support ${params.name || "Creator"}</h2>
     <p>Price: ${params.price} SOL</p>
-    <button id="pay">Buy Coffee</button>
+    <button id="pay">Buy Coffee ☕</button>
   `;
-  
+
   document.getElementById("pay").onclick = async () => {
     await connectWallet();
     if(!wallet) return;
-    
+
     const transaction = new solanaWeb3.Transaction().add(
       solanaWeb3.SystemProgram.transfer({
         fromPubkey: wallet,
@@ -102,13 +141,13 @@ async function supporterPage(params) {
         lamports: PLATFORM_FEE_SOL * solanaWeb3.LAMPORTS_PER_SOL
       })
     );
-    
+
     try {
       const { signature } = await window.solana.signAndSendTransaction(transaction);
       alert("☕ Payment sent! Tx: " + signature);
     } catch(err) {
       console.error(err);
-      alert("Transaction failed");
+      alert("Transaction failed!");
     }
   };
 }
