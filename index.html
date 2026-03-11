@@ -402,6 +402,24 @@ async function fetchPublicDrop() {
   return { mintPrice, startTime, endTime, maxPerWallet, feeBps };
 }
 
+// ─── Read allowed fee recipients from SeaDrop ──────────────────────────────
+// getAllowedFeeRecipients(address) selector = 0x4b80aa3b (from SeaDrop ABI)
+async function fetchAllowedFeeRecipients() {
+  const selector = '0x4b80aa3b';
+  const data = selector + padAddr(NFT);
+  const result = await rpcCall('eth_call', [{ to: SEADROP, data }, 'latest']);
+  if (!result || result === '0x' || result.length < 130) return [];
+  const hex = result.slice(2);
+  // ABI-encoded address[]: offset(32) + length(32) + addresses(32 each)
+  const arrayLen = parseInt(hex.slice(64, 128), 16);
+  const recipients = [];
+  for (let i = 0; i < arrayLen; i++) {
+    const addrHex = hex.slice(128 + i * 64, 128 + (i + 1) * 64);
+    recipients.push('0x' + addrHex.slice(24));
+  }
+  return recipients;
+}
+
 // ─── Switch to Base ──────────────────────────────────────────────────────────
 async function switchToBase() {
   const p = getProvider() || window.ethereum;
@@ -477,7 +495,19 @@ async function connect() {
     wallet = accounts[0];
     render(); // show loading state
     // Now fetch drop data
-    drop = await fetchPublicDrop();
+    const [dropData, feeRecipients] = await Promise.all([
+      fetchPublicDrop(),
+      fetchAllowedFeeRecipients()
+    ]);
+    drop = dropData;
+    // Use first allowed fee recipient, fallback to known OpenSea one
+    if (feeRecipients.length > 0) {
+      window._feeRecipient = feeRecipients[0];
+      console.log('Fee recipients found:', feeRecipients);
+    } else {
+      window._feeRecipient = FEE_RECIP; // fallback
+      console.log('No fee recipients found, using fallback:', FEE_RECIP);
+    }
     render();
   } catch(e) {
     errorMsg = e.message || 'Connection failed.';
@@ -507,7 +537,7 @@ async function mint() {
     const selector = '0x161ac21f';
     const calldata = selector
       + padAddr(NFT)           // nftContract
-      + padAddr(FEE_RECIP)     // feeRecipient
+      + padAddr(window._feeRecipient || FEE_RECIP) // feeRecipient (fetched from chain)
       + padAddr('0x0000000000000000000000000000000000000000') // minterIfNotPayer = address(0) means use msg.sender
       + padUint(quantity);     // quantity
 
