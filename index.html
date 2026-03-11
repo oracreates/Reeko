@@ -1,152 +1,652 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Sipps - Support Creators</title>
-<script src="https://cdn.jsdelivr.net/npm/@solana/web3.js@1.73.0/lib/index.iife.min.js"></script>
-<style>
-body { font-family:'Segoe UI', sans-serif; background:#fff7ed; display:flex; justify-content:center; align-items:center; min-height:100vh; margin:0; }
-.box { background:white; padding:2rem; border-radius:16px; width:360px; text-align:center; box-shadow:0 8px 25px rgba(0,0,0,0.1); transition:0.3s; }
-.box h2 { margin-bottom:1rem; color:#333; }
-input, button { width:100%; padding:.7rem; margin:.5rem 0; border-radius:8px; border:1px solid #ccc; font-size:1rem; }
-input:focus { outline:none; border-color:#ff6b6b; }
-button { background:#ff6b6b; color:white; border:none; cursor:pointer; font-weight:600; transition:0.3s; }
-button:hover { background:#ff3b3b; }
-button:disabled { background:#ccc; cursor:not-allowed; }
-a { color:#ff6b6b; text-decoration:none; word-break:break-all; }
-</style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Galactic MFERs — Mint</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@700;800&display=swap');
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --green: #00ff87;
+      --cyan: #60efff;
+      --red: #ff4444;
+      --bg: #06060c;
+      --card: #0d0d1a;
+      --border: #1e1e32;
+      --text: #e2e2f0;
+      --muted: #555570;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Space Mono', monospace;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 24px 16px;
+    }
+
+    /* Subtle grid bg */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(0,255,135,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0,255,135,0.03) 1px, transparent 1px);
+      background-size: 40px 40px;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .wrap {
+      position: relative;
+      z-index: 1;
+      width: 100%;
+      max-width: 440px;
+    }
+
+    /* Header */
+    .header {
+      text-align: center;
+      margin-bottom: 32px;
+    }
+    .header .label {
+      font-size: 10px;
+      letter-spacing: 6px;
+      color: var(--muted);
+      margin-bottom: 10px;
+      text-transform: uppercase;
+    }
+    .header h1 {
+      font-family: 'Syne', sans-serif;
+      font-size: clamp(30px, 7vw, 52px);
+      font-weight: 800;
+      background: linear-gradient(90deg, var(--green), var(--cyan));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      letter-spacing: -1px;
+      line-height: 1;
+    }
+    .header .sub {
+      font-size: 10px;
+      color: var(--muted);
+      margin-top: 8px;
+      letter-spacing: 4px;
+    }
+
+    /* Card */
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+    }
+
+    .card-row {
+      padding: 14px 20px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .card-row .key {
+      font-size: 9px;
+      letter-spacing: 3px;
+      color: var(--muted);
+      text-transform: uppercase;
+    }
+    .card-row .val {
+      font-size: 11px;
+      color: var(--cyan);
+    }
+
+    .card-body { padding: 24px; }
+
+    /* Buttons */
+    .btn {
+      width: 100%;
+      padding: 15px;
+      font-family: 'Space Mono', monospace;
+      font-weight: 700;
+      font-size: 13px;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      border-radius: 6px;
+      cursor: pointer;
+      border: none;
+      transition: opacity 0.15s, transform 0.1s;
+    }
+    .btn:active { transform: scale(0.98); }
+    .btn:disabled { cursor: not-allowed; opacity: 0.5; }
+
+    .btn-outline {
+      background: transparent;
+      border: 1px solid var(--green);
+      color: var(--green);
+    }
+    .btn-outline:hover:not(:disabled) {
+      background: var(--green);
+      color: var(--bg);
+    }
+
+    .btn-primary {
+      background: linear-gradient(90deg, var(--green), var(--cyan));
+      color: var(--bg);
+    }
+    .btn-primary:hover:not(:disabled) { opacity: 0.9; }
+
+    .btn-success {
+      background: #0a2a14;
+      border: 1px solid #00aa55;
+      color: #00ff87;
+    }
+
+    /* Stats grid */
+    .stats {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+    .stat {
+      background: #080814;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 14px;
+    }
+    .stat .stat-label {
+      font-size: 9px;
+      letter-spacing: 3px;
+      color: var(--muted);
+      margin-bottom: 6px;
+    }
+    .stat .stat-val {
+      font-family: 'Syne', sans-serif;
+      font-size: 20px;
+      font-weight: 800;
+      color: var(--green);
+    }
+
+    /* Quantity row */
+    .qty-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      background: #08081400;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 12px 16px;
+      margin-bottom: 16px;
+    }
+    .qty-label {
+      font-size: 10px;
+      letter-spacing: 3px;
+      color: var(--muted);
+      flex: 1;
+    }
+    .qty-btn {
+      width: 32px;
+      height: 32px;
+      background: var(--border);
+      border: none;
+      color: var(--text);
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 18px;
+      font-family: 'Space Mono', monospace;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.1s;
+    }
+    .qty-btn:hover { background: #2a2a44; }
+    .qty-num {
+      font-family: 'Syne', sans-serif;
+      font-size: 22px;
+      font-weight: 800;
+      min-width: 28px;
+      text-align: center;
+    }
+
+    /* Total */
+    .total-row {
+      display: flex;
+      justify-content: space-between;
+      font-size: 11px;
+      color: var(--muted);
+      margin-bottom: 16px;
+      padding: 0 4px;
+    }
+    .total-row span { color: var(--cyan); }
+
+    /* Alert boxes */
+    .alert {
+      padding: 12px 16px;
+      border-radius: 6px;
+      font-size: 11px;
+      line-height: 1.6;
+      margin-bottom: 16px;
+    }
+    .alert-error {
+      background: #1a0808;
+      border: 1px solid #3a1010;
+      color: var(--red);
+    }
+    .alert-warn {
+      background: #1a1400;
+      border: 1px solid #3a2a00;
+      color: #ffaa00;
+    }
+    .alert-info {
+      background: #080a18;
+      border: 1px solid var(--border);
+      color: var(--muted);
+    }
+
+    /* TX link */
+    .tx-link {
+      display: block;
+      text-align: center;
+      margin-top: 14px;
+      font-size: 11px;
+      color: var(--cyan);
+      text-decoration: none;
+      letter-spacing: 1px;
+    }
+    .tx-link:hover { text-decoration: underline; }
+
+    /* Wallet row */
+    .wallet-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 14px;
+      background: #08081400;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      margin-bottom: 20px;
+    }
+    .wallet-row .wkey {
+      font-size: 9px;
+      letter-spacing: 3px;
+      color: var(--muted);
+    }
+    .wallet-row .wval {
+      font-size: 11px;
+      color: var(--cyan);
+    }
+
+    .footer {
+      text-align: center;
+      margin-top: 20px;
+      font-size: 9px;
+      color: #222240;
+      letter-spacing: 2px;
+    }
+
+    /* Loading spinner */
+    .spin {
+      display: inline-block;
+      animation: spin 1s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* Intro text */
+    .intro {
+      font-size: 12px;
+      color: var(--muted);
+      text-align: center;
+      line-height: 1.7;
+      margin-bottom: 24px;
+    }
+  </style>
 </head>
 <body>
+<div class="wrap">
 
-<div class="box" id="app">Loading...</div>
+  <!-- Header -->
+  <div class="header">
+    <div class="label">Base Chain · SeaDrop</div>
+    <h1>GALACTIC MFERS</h1>
+    <div class="sub">Free Mint</div>
+  </div>
+
+  <!-- Card -->
+  <div class="card">
+    <div class="card-row">
+      <span class="key">NFT Contract</span>
+      <span class="val" id="nftAddr">0xFd5F...eed1</span>
+    </div>
+    <div class="card-row">
+      <span class="key">Via</span>
+      <span class="val">OpenSea SeaDrop</span>
+    </div>
+
+    <div class="card-body" id="cardBody">
+      <!-- Injected by JS -->
+    </div>
+  </div>
+
+  <div class="footer">GALACTIC MFERS · BASE CHAIN · SEADROP v1</div>
+</div>
 
 <script>
-const app = document.getElementById("app");
-const PLATFORM_WALLET = "YOUR_PLATFORM_WALLET_PUBLIC_KEY_HERE"; // replace
-const PLATFORM_FEE_SOL = 0.0003; // $0.1 approx
-const connection = new solanaWeb3.Connection(solanaWeb3.clusterApiUrl("mainnet-beta"), "confirmed");
+// ─── Config ──────────────────────────────────────────────────────────────────
+const NFT      = '0xFd5F7CE32ab4e2Dfc44D82636afF28369B61eed1';
+const SEADROP  = '0x00005EA00Ac477B1030CE78506496e8C2dE24bf5';
+const FEE_RECIP = '0x0000a26b00c1F0DF003000390027140000fAa719';
+const BASE_ID  = '0x2105'; // 8453 decimal
+const RPC      = 'https://mainnet.base.org';
+const SCAN     = 'https://basescan.org/tx/';
 
-let wallet = null;      // wallet object
-let publicKey = null;   // wallet public key
+// ─── State ───────────────────────────────────────────────────────────────────
+let wallet = null;
+let drop = null;
+let quantity = 1;
+let mintStatus = 'idle'; // idle | pending | success | error
+let txHash = null;
+let errorMsg = null;
 
-// ----- Multi-wallet Connect -----
-async function connectWallet() {
-  try {
-    if(window.solana?.isPhantom) { wallet = window.solana; await wallet.connect(); publicKey = wallet.publicKey; return publicKey; }
-    if(window.solflare?.isSolflare) { wallet = window.solflare; await wallet.connect(); publicKey = wallet.publicKey; return publicKey; }
-    if(window.glow?.isGlow) { wallet = window.glow; await wallet.connect(); publicKey = wallet.publicKey; return publicKey; }
-    if(window.slope?.isSlope) { wallet = window.slope; await wallet.connect(); publicKey = wallet.publicKey; return publicKey; }
-    if(window.sollet?.isSollet) { wallet = window.sollet; await wallet.connect(); publicKey = wallet.publicKey; return publicKey; }
-
-    alert("No supported wallet found! Install Phantom, Solflare, Glow, Slope, or Sollet.");
-  } catch(err) {
-    console.error(err);
-    alert("Wallet connection failed!");
-  }
+// ─── ABI encoding helpers ────────────────────────────────────────────────────
+// Pad address (20 bytes) to 32 bytes
+function padAddr(addr) {
+  return addr.replace('0x','').toLowerCase().padStart(64,'0');
 }
-
-// ----- URL Params -----
-function getParams() {
-  const url = new URL(window.location.href);
-  const params = url.hash.substring(1);
-  const data = {};
-  params.split("&").forEach(p=>{
-    const [k,v] = p.split("=");
-    if(k && v) data[k] = decodeURIComponent(v);
+// Pad uint256
+function padUint(n) {
+  return BigInt(n).toString(16).padStart(64,'0');
+}
+// eth_call to Base RPC
+async function rpcCall(method, params) {
+  const res = await fetch(RPC, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ jsonrpc:'2.0', id:1, method, params })
   });
-  return data;
+  const j = await res.json();
+  if (j.error) throw new Error(j.error.message);
+  return j.result;
 }
 
-// ----- Send Transaction (works for all wallets) -----
-async function sendTransaction(tx) {
-  if(!wallet) return alert("Connect wallet first!");
+// ─── Read PublicDrop from SeaDrop ────────────────────────────────────────────
+// getPublicDrop(address nftContract) -> PublicDrop struct
+// selector: keccak256("getPublicDrop(address)") = 0x4b98e5b0 (confirmed from SeaDrop ABI)
+async function fetchPublicDrop() {
+  const selector = '0x4b98e5b0';
+  const data = selector + padAddr(NFT);
+  const result = await rpcCall('eth_call', [{ to: SEADROP, data }, 'latest']);
+  if (!result || result === '0x' || result.length < 10) return null;
 
+  // PublicDrop struct (from SeaDrop source):
+  // uint80 mintPrice     → slot 0, bytes 0-31  (right-aligned, so read last 10 bytes = 20 hex chars)
+  // uint48 startTime     → slot 1, bytes 32-63
+  // uint48 endTime       → slot 2, bytes 64-95
+  // uint16 maxTotalMintableByWallet → slot 3
+  // uint16 feeBps        → slot 4
+  // bool   restrictFeeRecipients → slot 5
+  const hex = result.slice(2); // strip 0x
+  const mintPrice   = BigInt('0x' + hex.slice(0, 64));
+  const startTime   = BigInt('0x' + hex.slice(64, 128));
+  const endTime     = BigInt('0x' + hex.slice(128, 192));
+  const maxPerWallet = parseInt('0x' + hex.slice(192, 256), 16);
+  const feeBps      = parseInt('0x' + hex.slice(256, 320), 16);
+
+  return { mintPrice, startTime, endTime, maxPerWallet, feeBps };
+}
+
+// ─── Switch to Base ──────────────────────────────────────────────────────────
+async function switchToBase() {
   try {
-    if(wallet.isPhantom || wallet.isSolflare || wallet.isGlow || wallet.isSlope) {
-      const { signature } = await wallet.signAndSendTransaction(tx);
-      return signature;
+    await window.ethereum.request({
+      method: 'wallet_switchEthereumChain',
+      params: [{ chainId: BASE_ID }]
+    });
+  } catch(e) {
+    // 4902 = chain not added
+    if (e.code === 4902 || e.code === -32603) {
+      await window.ethereum.request({
+        method: 'wallet_addEthereumChain',
+        params: [{
+          chainId: BASE_ID,
+          chainName: 'Base',
+          rpcUrls: [RPC],
+          nativeCurrency: { name:'Ether', symbol:'ETH', decimals:18 },
+          blockExplorerUrls: ['https://basescan.org']
+        }]
+      });
+    } else {
+      throw e;
     }
-    if(wallet.isSollet) {
-      await wallet.signTransaction(tx);
-      const signature = await wallet.sendTransaction(tx, connection);
-      return signature;
-    }
-  } catch(err) {
-    console.error(err);
-    alert("Transaction failed!");
   }
 }
 
-// ----- Creator Page -----
-function creatorPage() {
-  app.innerHTML = `
-    <h2>Create Sipps Profile</h2>
-    <input id="name" placeholder="Display Name (e.g. Jane)" />
-    <input id="price" placeholder="Coffee price (SOL)" />
-    <button id="connect">Connect Wallet</button>
-    <button id="create" disabled>Create Profile</button>
-    <p id="link"></p>
-  `;
+// ─── Connect wallet ──────────────────────────────────────────────────────────
+async function connect() {
+  errorMsg = null;
+  if (!window.ethereum) {
+    errorMsg = 'No wallet detected. Make sure Rabby is installed and enabled.';
+    render(); return;
+  }
+  try {
+    await switchToBase();
+    const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+    if (!accounts || accounts.length === 0) throw new Error('No accounts returned.');
+    wallet = accounts[0];
+    render(); // show loading state
+    // Now fetch drop data
+    drop = await fetchPublicDrop();
+    render();
+  } catch(e) {
+    errorMsg = e.message || 'Connection failed.';
+    render();
+  }
+}
 
-  const connectBtn = document.getElementById("connect");
-  const createBtn = document.getElementById("create");
-  const linkEl = document.getElementById("link");
+// ─── Mint ────────────────────────────────────────────────────────────────────
+// mintPublic(address nftContract, address feeRecipient, address minterIfNotPayer, uint256 quantity)
+// selector: keccak256("mintPublic(address,address,address,uint256)") = 0x161ac21f
+async function mint() {
+  errorMsg = null;
+  mintStatus = 'pending';
+  txHash = null;
+  render();
 
-  connectBtn.onclick = async () => {
-    await connectWallet();
-    if(publicKey) {
-      createBtn.disabled = false;
-      connectBtn.textContent = "Wallet Connected ✅";
+  try {
+    // Make sure still on Base
+    await switchToBase();
+
+    const mintPrice = drop ? drop.mintPrice : 0n;
+    const totalWei  = mintPrice * BigInt(quantity);
+    const valueHex  = '0x' + totalWei.toString(16);
+
+    // Encode calldata:
+    // mintPublic(address nftContract, address feeRecipient, address minterIfNotPayer, uint256 quantity)
+    const selector = '0x161ac21f';
+    const calldata = selector
+      + padAddr(NFT)           // nftContract
+      + padAddr(FEE_RECIP)     // feeRecipient
+      + padAddr('0x0000000000000000000000000000000000000000') // minterIfNotPayer = address(0) means use msg.sender
+      + padUint(quantity);     // quantity
+
+    // Gas: 120k base + 50k per extra token
+    const gasLimit = '0x' + (120000 + 50000 * (quantity - 1)).toString(16);
+
+    const tx = await window.ethereum.request({
+      method: 'eth_sendTransaction',
+      params: [{
+        from:  wallet,
+        to:    SEADROP,
+        value: valueHex,
+        data:  calldata,
+        gas:   gasLimit,
+      }]
+    });
+
+    txHash = tx;
+    mintStatus = 'success';
+  } catch(e) {
+    mintStatus = 'error';
+    // Parse revert reasons
+    let msg = e.message || 'Transaction failed.';
+    if (msg.includes('user rejected') || msg.includes('User rejected') || msg.includes('4001')) {
+      msg = 'Transaction rejected in wallet.';
+    } else if (msg.includes('FeeRecipientNotAllowed')) {
+      msg = 'Fee recipient not allowed. The drop may require minting directly on OpenSea.';
+    } else if (msg.includes('NotActive') || msg.includes('not active')) {
+      msg = 'This drop is not currently active.';
+    } else if (msg.includes('MintQuantityExceedsMaxSupply')) {
+      msg = 'Mint quantity exceeds max supply — collection may be sold out.';
+    } else if (msg.includes('MintQuantityExceedsMaxMintedPerWallet') || msg.includes('maxTotalMintableByWallet')) {
+      msg = 'You have reached the max mint limit for this wallet.';
     }
-  };
-
-  createBtn.onclick = () => {
-    const name = document.getElementById("name").value.trim();
-    const price = parseFloat(document.getElementById("price").value);
-    if(!name || !price) return alert("Fill all fields");
-
-    const link = `${window.location.origin}/#to=${publicKey}&name=${encodeURIComponent(name)}&price=${price}`;
-    linkEl.innerHTML = `Share your link:<br><a href="${link}">${link}</a>`;
-    alert("Profile created! Copy the link above.");
-  };
+    errorMsg = msg;
+  }
+  render();
 }
 
-// ----- Supporter Page -----
-async function supporterPage(params) {
-  app.innerHTML = `
-    <h2>Support ${params.name || "Creator"}</h2>
-    <p>Price: ${params.price} SOL</p>
-    <button id="pay">Buy Coffee ☕</button>
-  `;
-
-  document.getElementById("pay").onclick = async () => {
-    await connectWallet();
-    if(!wallet) return;
-
-    const tx = new solanaWeb3.Transaction().add(
-      solanaWeb3.SystemProgram.transfer({
-        fromPubkey: publicKey,
-        toPubkey: new solanaWeb3.PublicKey(params.to),
-        lamports: parseFloat(params.price) * solanaWeb3.LAMPORTS_PER_SOL
-      }),
-      solanaWeb3.SystemProgram.transfer({
-        fromPubkey: publicKey,
-        toPubkey: new solanaWeb3.PublicKey(PLATFORM_WALLET),
-        lamports: PLATFORM_FEE_SOL * solanaWeb3.LAMPORTS_PER_SOL
-      })
-    );
-
-    const signature = await sendTransaction(tx);
-    if(signature) alert("☕ Payment sent! Tx: " + signature);
-  };
+// ─── Helpers ─────────────────────────────────────────────────────────────────
+function shortAddr(a) {
+  return a ? a.slice(0,6) + '...' + a.slice(-4) : '';
+}
+function fmtEth(wei) {
+  if (wei === 0n) return 'FREE';
+  const eth = Number(wei) / 1e18;
+  return eth.toFixed(4) + ' ETH';
+}
+function fmtTime(ts) {
+  if (!ts || ts === 0n) return '—';
+  return new Date(Number(ts) * 1000).toLocaleString();
+}
+function dropIsActive(d) {
+  if (!d) return false;
+  const now = BigInt(Math.floor(Date.now() / 1000));
+  if (d.startTime > 0n && now < d.startTime) return false;
+  if (d.endTime > 0n && now > d.endTime) return false;
+  return true;
 }
 
-// ----- Router -----
-const params = getParams();
-if(params.to) supporterPage(params);
-else creatorPage();
+// ─── Render ──────────────────────────────────────────────────────────────────
+function render() {
+  const body = document.getElementById('cardBody');
+  let html = '';
 
+  if (!wallet) {
+    // --- Not connected ---
+    html += `
+      <p class="intro">Connect your Rabby wallet to check the live drop status and mint your Galactic MFERs.</p>
+      <button class="btn btn-outline" onclick="connect()">⬡ &nbsp;Connect Wallet</button>
+    `;
+  } else {
+    // --- Connected ---
+    html += `
+      <div class="wallet-row">
+        <span class="wkey">Connected</span>
+        <span class="wval">${shortAddr(wallet)}</span>
+      </div>
+    `;
+
+    if (!drop && !errorMsg) {
+      // Loading drop data
+      html += `<div class="alert alert-info"><span class="spin">⟳</span> &nbsp;Loading drop data from chain...</div>`;
+    } else if (drop) {
+      const active = dropIsActive(drop);
+      const now = BigInt(Math.floor(Date.now() / 1000));
+      const notStarted = drop.startTime > 0n && now < drop.startTime;
+      const ended = drop.endTime > 0n && now > drop.endTime;
+
+      // Stats
+      html += `<div class="stats">
+        <div class="stat">
+          <div class="stat-label">Mint Price</div>
+          <div class="stat-val">${fmtEth(drop.mintPrice)}</div>
+        </div>
+        <div class="stat">
+          <div class="stat-label">Max / Wallet</div>
+          <div class="stat-val">${drop.maxPerWallet === 0 ? '∞' : drop.maxPerWallet}</div>
+        </div>
+      </div>`;
+
+      if (notStarted) {
+        html += `<div class="alert alert-warn">⏳ Drop starts: ${fmtTime(drop.startTime)}</div>`;
+      } else if (ended) {
+        html += `<div class="alert alert-warn">⛔ This drop has ended (${fmtTime(drop.endTime)})</div>`;
+      }
+
+      if (active) {
+        // Quantity selector
+        const maxQ = drop.maxPerWallet > 0 ? drop.maxPerWallet : 10;
+        html += `
+          <div class="qty-row">
+            <span class="qty-label">Quantity</span>
+            <button class="qty-btn" onclick="changeQty(-1)">−</button>
+            <span class="qty-num" id="qtyDisplay">${quantity}</span>
+            <button class="qty-btn" onclick="changeQty(1)">+</button>
+          </div>
+        `;
+
+        if (drop.mintPrice > 0n) {
+          html += `
+            <div class="total-row">
+              <span>Total</span>
+              <span>${fmtEth(drop.mintPrice * BigInt(quantity))}</span>
+            </div>
+          `;
+        }
+
+        // Mint button
+        if (mintStatus === 'pending') {
+          html += `<button class="btn btn-outline" disabled><span class="spin">⟳</span> &nbsp;Minting...</button>`;
+        } else if (mintStatus === 'success') {
+          html += `<button class="btn btn-success">✓ &nbsp;Minted Successfully!</button>`;
+          if (txHash) {
+            html += `<a class="tx-link" href="${SCAN}${txHash}" target="_blank" rel="noreferrer">View on Basescan ↗</a>`;
+          }
+        } else {
+          html += `<button class="btn btn-primary" onclick="mint()">Mint ${quantity === 1 ? '' : quantity + 'x '}&nbsp;Free</button>`;
+        }
+      }
+    }
+  }
+
+  // Error box (shown regardless of state)
+  if (errorMsg) {
+    html += `<div class="alert alert-error" style="margin-top:14px">⚠ ${errorMsg}</div>`;
+  }
+
+  body.innerHTML = html;
+}
+
+// ─── Qty controls ────────────────────────────────────────────────────────────
+function changeQty(delta) {
+  const maxQ = (drop && drop.maxPerWallet > 0) ? drop.maxPerWallet : 10;
+  quantity = Math.max(1, Math.min(maxQ, quantity + delta));
+  mintStatus = mintStatus === 'success' ? 'success' : 'idle'; // keep success state
+  render();
+}
+
+// ─── Init ────────────────────────────────────────────────────────────────────
+render();
+
+// Auto-handle account/chain changes from wallet
+if (window.ethereum) {
+  window.ethereum.on('accountsChanged', (accounts) => {
+    wallet = accounts[0] || null;
+    drop = null; mintStatus = 'idle'; txHash = null; errorMsg = null;
+    render();
+  });
+  window.ethereum.on('chainChanged', () => {
+    // Reload the page on chain change (standard practice)
+    window.location.reload();
+  });
+}
 </script>
 </body>
 </html>
