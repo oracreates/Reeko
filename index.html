@@ -404,15 +404,17 @@ async function fetchPublicDrop() {
 
 // ─── Switch to Base ──────────────────────────────────────────────────────────
 async function switchToBase() {
+  const p = getProvider() || window.ethereum;
+  if (!p) return;
   try {
-    await window.ethereum.request({
+    await p.request({
       method: 'wallet_switchEthereumChain',
       params: [{ chainId: BASE_ID }]
     });
   } catch(e) {
     // 4902 = chain not added
     if (e.code === 4902 || e.code === -32603) {
-      await window.ethereum.request({
+      await p.request({
         method: 'wallet_addEthereumChain',
         params: [{
           chainId: BASE_ID,
@@ -428,16 +430,49 @@ async function switchToBase() {
   }
 }
 
+// ─── Get provider (handles timing issues in mobile wallet browsers) ───────────
+function getProvider() {
+  // Rabby / most wallets
+  if (window.ethereum) return window.ethereum;
+  // Some wallets use window.web3
+  if (window.web3 && window.web3.currentProvider) return window.web3.currentProvider;
+  return null;
+}
+
+async function waitForProvider(timeoutMs = 3000) {
+  return new Promise((resolve) => {
+    if (getProvider()) { resolve(getProvider()); return; }
+    // Poll every 100ms up to timeoutMs
+    let elapsed = 0;
+    const interval = setInterval(() => {
+      elapsed += 100;
+      const p = getProvider();
+      if (p) { clearInterval(interval); resolve(p); return; }
+      if (elapsed >= timeoutMs) { clearInterval(interval); resolve(null); }
+    }, 100);
+  });
+}
+
 // ─── Connect wallet ──────────────────────────────────────────────────────────
 async function connect() {
   errorMsg = null;
-  if (!window.ethereum) {
-    errorMsg = 'No wallet detected. Make sure Rabby is installed and enabled.';
+  // Show connecting state
+  document.getElementById('cardBody').innerHTML =
+    '<div class="alert alert-info"><span class="spin">⟳</span> &nbsp;Detecting wallet...</div>';
+
+  const provider = await waitForProvider(3000);
+
+  if (!provider) {
+    errorMsg = 'No wallet detected. Open this page inside your Rabby wallet browser.';
     render(); return;
   }
+
+  // Patch window.ethereum in case it was found via alternate path
+  if (!window.ethereum) window.ethereum = provider;
+
   try {
     await switchToBase();
-    const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+    const accounts = await provider.request({ method: 'eth_requestAccounts' });
     if (!accounts || accounts.length === 0) throw new Error('No accounts returned.');
     wallet = accounts[0];
     render(); // show loading state
@@ -479,7 +514,7 @@ async function mint() {
     // Gas: 120k base + 50k per extra token
     const gasLimit = '0x' + (120000 + 50000 * (quantity - 1)).toString(16);
 
-    const tx = await window.ethereum.request({
+    const tx = await (getProvider()).request({
       method: 'eth_sendTransaction',
       params: [{
         from:  wallet,
@@ -635,18 +670,23 @@ function changeQty(delta) {
 // ─── Init ────────────────────────────────────────────────────────────────────
 render();
 
-// Auto-handle account/chain changes from wallet
-if (window.ethereum) {
-  window.ethereum.on('accountsChanged', (accounts) => {
-    wallet = accounts[0] || null;
-    drop = null; mintStatus = 'idle'; txHash = null; errorMsg = null;
-    render();
-  });
-  window.ethereum.on('chainChanged', () => {
-    // Reload the page on chain change (standard practice)
-    window.location.reload();
-  });
-}
+// Wait for provider then attach listeners (handles mobile wallet timing)
+waitForProvider(3000).then((provider) => {
+  if (!provider) return;
+  if (!window.ethereum) window.ethereum = provider;
+  try {
+    provider.on('accountsChanged', (accounts) => {
+      wallet = accounts[0] || null;
+      drop = null; mintStatus = 'idle'; txHash = null; errorMsg = null;
+      render();
+    });
+    provider.on('chainChanged', () => {
+      window.location.reload();
+    });
+  } catch(e) {
+    // Some providers don't support .on() — safe to ignore
+  }
+});
 </script>
 </body>
 </html>
