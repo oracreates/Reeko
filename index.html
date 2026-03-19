@@ -1,97 +1,178 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Adventure Game</title>
+  <title>Mobile Sandbox Game</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
   <style>
-    body { margin: 0; overflow: hidden; background: black; }
-    canvas { display: block; }
+    body { margin: 0; overflow: hidden; touch-action: none; }
+    canvas { display: block; background: #87CEEB; } /* Sky blue */
+    .hotbar {
+      position: absolute; bottom: 10px; left: 50%; transform: translateX(-50%);
+      display: flex; gap: 5px;
+    }
+    .slot {
+      width: 48px; height: 48px; border: 2px solid white; text-align: center;
+      font-weight: bold; font-size: 16px; color: white; line-height: 48px;
+      background: rgba(0,0,0,0.5); border-radius: 5px;
+    }
+    .selected { border-color: yellow; }
   </style>
 </head>
 <body>
 
 <canvas id="game"></canvas>
+<div class="hotbar" id="hotbar"></div>
 
 <script>
 const canvas = document.getElementById("game");
 const ctx = canvas.getContext("2d");
 
-canvas.width = 800;
-canvas.height = 450;
+function resizeCanvas() {
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+}
+window.addEventListener('resize', resizeCanvas);
+resizeCanvas();
 
-// TILE SETTINGS
-const TILE_SIZE = 32;
+const TILE_SIZE = 48; // mobile-friendly size
+const GRAVITY = 0.5;
 
-// MAP (0 = grass, 1 = sand, 2 = water)
-const map = [
-  [0,0,0,0,1,1,1,2,2,2],
-  [0,0,0,0,1,1,1,2,2,2],
-  [0,0,0,0,1,1,1,2,2,2],
-  [0,0,0,0,1,1,1,2,2,2],
-  [0,0,0,0,1,1,1,2,2,2],
-];
-
-// Player
-let player = {
-  x: 100,
-  y: 100,
-  size: 20,
-  speed: 2
-};
-
-// Controls
-let keys = {};
-window.addEventListener("keydown", e => keys[e.key] = true);
-window.addEventListener("keyup", e => keys[e.key] = false);
-
-// UPDATE
-function update() {
-  if (keys["w"]) player.y -= player.speed;
-  if (keys["s"]) player.y += player.speed;
-  if (keys["a"]) player.x -= player.speed;
-  if (keys["d"]) player.x += player.speed;
+// WORLD (0=air, 1=dirt, 2=grass, 3=stone)
+let world = [];
+const ROWS = 50;
+const COLS = 100;
+for (let y = 0; y < ROWS; y++) {
+  let row = [];
+  for (let x = 0; x < COLS; x++) {
+    row.push(y > 30 ? 1 : 0);
+  }
+  world.push(row);
 }
 
-// DRAW MAP
-function drawMap() {
-  for (let row = 0; row < map.length; row++) {
-    for (let col = 0; col < map[row].length; col++) {
+// PLAYER
+let player = {
+  x: 200,
+  y: 0,
+  w: 40,
+  h: 56,
+  vx: 0,
+  vy: 0,
+  speed: 4,
+  jump: -12,
+  onGround: false
+};
 
-      let tile = map[row][col];
+// HOTBAR / INVENTORY
+let inventory = [
+  { type: 1, amount: 50 }, // dirt
+  { type: 2, amount: 50 }, // grass
+  { type: 3, amount: 50 }  // stone
+];
+let selectedSlot = 0;
 
-      if (tile === 0) ctx.fillStyle = "#3aa655"; // grass
-      if (tile === 1) ctx.fillStyle = "#d9c28f"; // sand
-      if (tile === 2) ctx.fillStyle = "#4ca3dd"; // water
+// HOTBAR DOM
+const hotbarEl = document.getElementById('hotbar');
+function renderHotbar() {
+  hotbarEl.innerHTML = '';
+  inventory.forEach((item, i) => {
+    const slot = document.createElement('div');
+    slot.classList.add('slot');
+    if(i === selectedSlot) slot.classList.add('selected');
+    slot.textContent = item.amount;
+    hotbarEl.appendChild(slot);
+  });
+}
+renderHotbar();
 
-      ctx.fillRect(
-        col * TILE_SIZE,
-        row * TILE_SIZE,
-        TILE_SIZE,
-        TILE_SIZE
-      );
+// TOUCH / MOBILE CONTROLS
+let touchX = 0, touchY = 0, touchActive = false;
+
+canvas.addEventListener('touchstart', e => {
+  const t = e.touches[0];
+  touchX = t.clientX;
+  touchY = t.clientY;
+  touchActive = true;
+
+  placeOrBreakBlock(t.clientX, t.clientY);
+});
+
+canvas.addEventListener('touchmove', e => {
+  e.preventDefault();
+  const t = e.touches[0];
+  const dx = t.clientX - touchX;
+  const dy = t.clientY - touchY;
+
+  if(Math.abs(dx) > 10) player.x += dx * 0.1;
+  if(Math.abs(dy) > 10) player.y += dy * 0.1;
+
+  touchX = t.clientX;
+  touchY = t.clientY;
+});
+
+canvas.addEventListener('touchend', e => {
+  touchActive = false;
+});
+
+// PLACE/BREAK BLOCK
+function placeOrBreakBlock(mx, my) {
+  const tileX = Math.floor(mx / TILE_SIZE);
+  const tileY = Math.floor(my / TILE_SIZE);
+
+  if(world[tileY][tileX] !== 0) {
+    // BREAK
+    inventory.push({ type: world[tileY][tileX], amount: 1 });
+    world[tileY][tileX] = 0;
+  } else if(inventory[selectedSlot].amount > 0) {
+    // PLACE
+    world[tileY][tileX] = inventory[selectedSlot].type;
+    inventory[selectedSlot].amount--;
+  }
+  renderHotbar();
+}
+
+// DRAW WORLD
+function drawWorld() {
+  for(let y=0;y<world.length;y++){
+    for(let x=0;x<world[y].length;x++){
+      let tile = world[y][x];
+      if(tile === 1) ctx.fillStyle = '#8B5A2B'; // dirt
+      if(tile === 2) ctx.fillStyle = '#3AA655'; // grass
+      if(tile === 3) ctx.fillStyle = '#808080'; // stone
+      if(tile !== 0) ctx.fillRect(x*TILE_SIZE, y*TILE_SIZE, TILE_SIZE, TILE_SIZE);
     }
   }
 }
 
 // DRAW PLAYER
 function drawPlayer() {
-  ctx.fillStyle = "red";
-  ctx.fillRect(player.x, player.y, player.size, player.size);
+  ctx.fillStyle = 'red';
+  ctx.fillRect(player.x, player.y, player.w, player.h);
+}
+
+// UPDATE
+function update() {
+  player.vy += GRAVITY;
+  player.y += player.vy;
+
+  // SIMPLE GROUND COLLISION
+  let tileX = Math.floor(player.x / TILE_SIZE);
+  let tileY = Math.floor((player.y + player.h) / TILE_SIZE);
+  if(world[tileY] && world[tileY][tileX] !== 0){
+    player.y = tileY*TILE_SIZE - player.h;
+    player.vy = 0;
+    player.onGround = true;
+  } else player.onGround = false;
 }
 
 // GAME LOOP
-function gameLoop() {
+function gameLoop(){
   update();
-
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-  drawMap();
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  drawWorld();
   drawPlayer();
-
   requestAnimationFrame(gameLoop);
 }
-
 gameLoop();
 </script>
-
 </body>
 </html>
