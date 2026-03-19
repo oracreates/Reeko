@@ -1,722 +1,97 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Galactic MFERs — Mint</title>
+  <title>Adventure Game</title>
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@700;800&display=swap');
-
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-    :root {
-      --green: #00ff87;
-      --cyan: #60efff;
-      --red: #ff4444;
-      --bg: #06060c;
-      --card: #0d0d1a;
-      --border: #1e1e32;
-      --text: #e2e2f0;
-      --muted: #555570;
-    }
-
-    body {
-      background: var(--bg);
-      color: var(--text);
-      font-family: 'Space Mono', monospace;
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      padding: 24px 16px;
-    }
-
-    /* Subtle grid bg */
-    body::before {
-      content: '';
-      position: fixed;
-      inset: 0;
-      background-image:
-        linear-gradient(rgba(0,255,135,0.03) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(0,255,135,0.03) 1px, transparent 1px);
-      background-size: 40px 40px;
-      pointer-events: none;
-      z-index: 0;
-    }
-
-    .wrap {
-      position: relative;
-      z-index: 1;
-      width: 100%;
-      max-width: 440px;
-    }
-
-    /* Header */
-    .header {
-      text-align: center;
-      margin-bottom: 32px;
-    }
-    .header .label {
-      font-size: 10px;
-      letter-spacing: 6px;
-      color: var(--muted);
-      margin-bottom: 10px;
-      text-transform: uppercase;
-    }
-    .header h1 {
-      font-family: 'Syne', sans-serif;
-      font-size: clamp(30px, 7vw, 52px);
-      font-weight: 800;
-      background: linear-gradient(90deg, var(--green), var(--cyan));
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-      letter-spacing: -1px;
-      line-height: 1;
-    }
-    .header .sub {
-      font-size: 10px;
-      color: var(--muted);
-      margin-top: 8px;
-      letter-spacing: 4px;
-    }
-
-    /* Card */
-    .card {
-      background: var(--card);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      overflow: hidden;
-    }
-
-    .card-row {
-      padding: 14px 20px;
-      border-bottom: 1px solid var(--border);
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-    .card-row .key {
-      font-size: 9px;
-      letter-spacing: 3px;
-      color: var(--muted);
-      text-transform: uppercase;
-    }
-    .card-row .val {
-      font-size: 11px;
-      color: var(--cyan);
-    }
-
-    .card-body { padding: 24px; }
-
-    /* Buttons */
-    .btn {
-      width: 100%;
-      padding: 15px;
-      font-family: 'Space Mono', monospace;
-      font-weight: 700;
-      font-size: 13px;
-      letter-spacing: 3px;
-      text-transform: uppercase;
-      border-radius: 6px;
-      cursor: pointer;
-      border: none;
-      transition: opacity 0.15s, transform 0.1s;
-    }
-    .btn:active { transform: scale(0.98); }
-    .btn:disabled { cursor: not-allowed; opacity: 0.5; }
-
-    .btn-outline {
-      background: transparent;
-      border: 1px solid var(--green);
-      color: var(--green);
-    }
-    .btn-outline:hover:not(:disabled) {
-      background: var(--green);
-      color: var(--bg);
-    }
-
-    .btn-primary {
-      background: linear-gradient(90deg, var(--green), var(--cyan));
-      color: var(--bg);
-    }
-    .btn-primary:hover:not(:disabled) { opacity: 0.9; }
-
-    .btn-success {
-      background: #0a2a14;
-      border: 1px solid #00aa55;
-      color: #00ff87;
-    }
-
-    /* Stats grid */
-    .stats {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 10px;
-      margin-bottom: 20px;
-    }
-    .stat {
-      background: #080814;
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      padding: 14px;
-    }
-    .stat .stat-label {
-      font-size: 9px;
-      letter-spacing: 3px;
-      color: var(--muted);
-      margin-bottom: 6px;
-    }
-    .stat .stat-val {
-      font-family: 'Syne', sans-serif;
-      font-size: 20px;
-      font-weight: 800;
-      color: var(--green);
-    }
-
-    /* Quantity row */
-    .qty-row {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      background: #08081400;
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      padding: 12px 16px;
-      margin-bottom: 16px;
-    }
-    .qty-label {
-      font-size: 10px;
-      letter-spacing: 3px;
-      color: var(--muted);
-      flex: 1;
-    }
-    .qty-btn {
-      width: 32px;
-      height: 32px;
-      background: var(--border);
-      border: none;
-      color: var(--text);
-      border-radius: 6px;
-      cursor: pointer;
-      font-size: 18px;
-      font-family: 'Space Mono', monospace;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: background 0.1s;
-    }
-    .qty-btn:hover { background: #2a2a44; }
-    .qty-num {
-      font-family: 'Syne', sans-serif;
-      font-size: 22px;
-      font-weight: 800;
-      min-width: 28px;
-      text-align: center;
-    }
-
-    /* Total */
-    .total-row {
-      display: flex;
-      justify-content: space-between;
-      font-size: 11px;
-      color: var(--muted);
-      margin-bottom: 16px;
-      padding: 0 4px;
-    }
-    .total-row span { color: var(--cyan); }
-
-    /* Alert boxes */
-    .alert {
-      padding: 12px 16px;
-      border-radius: 6px;
-      font-size: 11px;
-      line-height: 1.6;
-      margin-bottom: 16px;
-    }
-    .alert-error {
-      background: #1a0808;
-      border: 1px solid #3a1010;
-      color: var(--red);
-    }
-    .alert-warn {
-      background: #1a1400;
-      border: 1px solid #3a2a00;
-      color: #ffaa00;
-    }
-    .alert-info {
-      background: #080a18;
-      border: 1px solid var(--border);
-      color: var(--muted);
-    }
-
-    /* TX link */
-    .tx-link {
-      display: block;
-      text-align: center;
-      margin-top: 14px;
-      font-size: 11px;
-      color: var(--cyan);
-      text-decoration: none;
-      letter-spacing: 1px;
-    }
-    .tx-link:hover { text-decoration: underline; }
-
-    /* Wallet row */
-    .wallet-row {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 10px 14px;
-      background: #08081400;
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      margin-bottom: 20px;
-    }
-    .wallet-row .wkey {
-      font-size: 9px;
-      letter-spacing: 3px;
-      color: var(--muted);
-    }
-    .wallet-row .wval {
-      font-size: 11px;
-      color: var(--cyan);
-    }
-
-    .footer {
-      text-align: center;
-      margin-top: 20px;
-      font-size: 9px;
-      color: #222240;
-      letter-spacing: 2px;
-    }
-
-    /* Loading spinner */
-    .spin {
-      display: inline-block;
-      animation: spin 1s linear infinite;
-    }
-    @keyframes spin { to { transform: rotate(360deg); } }
-
-    /* Intro text */
-    .intro {
-      font-size: 12px;
-      color: var(--muted);
-      text-align: center;
-      line-height: 1.7;
-      margin-bottom: 24px;
-    }
+    body { margin: 0; overflow: hidden; background: black; }
+    canvas { display: block; }
   </style>
 </head>
 <body>
-<div class="wrap">
 
-  <!-- Header -->
-  <div class="header">
-    <div class="label">Base Chain · SeaDrop</div>
-    <h1>GALACTIC MFERS</h1>
-    <div class="sub">Free Mint</div>
-  </div>
-
-  <!-- Card -->
-  <div class="card">
-    <div class="card-row">
-      <span class="key">NFT Contract</span>
-      <span class="val" id="nftAddr">0xFd5F...eed1</span>
-    </div>
-    <div class="card-row">
-      <span class="key">Via</span>
-      <span class="val">OpenSea SeaDrop</span>
-    </div>
-
-    <div class="card-body" id="cardBody">
-      <!-- Injected by JS -->
-    </div>
-  </div>
-
-  <div class="footer">GALACTIC MFERS · BASE CHAIN · SEADROP v1</div>
-</div>
+<canvas id="game"></canvas>
 
 <script>
-// ─── Config ──────────────────────────────────────────────────────────────────
-const NFT      = '0xFd5F7CE32ab4e2Dfc44D82636afF28369B61eed1';
-const SEADROP  = '0x00005EA00Ac477B1030CE78506496e8C2dE24bf5';
-const FEE_RECIP = '0x0000a26b00c1F0DF003000390027140000fAa719';
-const BASE_ID  = '0x2105'; // 8453 decimal
-const RPC      = 'https://mainnet.base.org';
-const SCAN     = 'https://basescan.org/tx/';
+const canvas = document.getElementById("game");
+const ctx = canvas.getContext("2d");
 
-// ─── State ───────────────────────────────────────────────────────────────────
-let wallet = null;
-let drop = null;
-let quantity = 1;
-let mintStatus = 'idle'; // idle | pending | success | error
-let txHash = null;
-let errorMsg = null;
+canvas.width = 800;
+canvas.height = 450;
 
-// ─── ABI encoding helpers ────────────────────────────────────────────────────
-// Pad address (20 bytes) to 32 bytes
-function padAddr(addr) {
-  return addr.replace('0x','').toLowerCase().padStart(64,'0');
-}
-// Pad uint256
-function padUint(n) {
-  return BigInt(n).toString(16).padStart(64,'0');
-}
-// eth_call to Base RPC
-async function rpcCall(method, params) {
-  const res = await fetch(RPC, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ jsonrpc:'2.0', id:1, method, params })
-  });
-  const j = await res.json();
-  if (j.error) throw new Error(j.error.message);
-  return j.result;
-}
+// TILE SETTINGS
+const TILE_SIZE = 32;
 
-// ─── Read PublicDrop from SeaDrop ────────────────────────────────────────────
-// getPublicDrop(address nftContract) -> PublicDrop struct
-// selector: keccak256("getPublicDrop(address)") = 0x4b98e5b0 (confirmed from SeaDrop ABI)
-async function fetchPublicDrop() {
-  const selector = '0x4b98e5b0';
-  const data = selector + padAddr(NFT);
-  const result = await rpcCall('eth_call', [{ to: SEADROP, data }, 'latest']);
-  if (!result || result === '0x' || result.length < 10) return null;
+// MAP (0 = grass, 1 = sand, 2 = water)
+const map = [
+  [0,0,0,0,1,1,1,2,2,2],
+  [0,0,0,0,1,1,1,2,2,2],
+  [0,0,0,0,1,1,1,2,2,2],
+  [0,0,0,0,1,1,1,2,2,2],
+  [0,0,0,0,1,1,1,2,2,2],
+];
 
-  // PublicDrop struct (from SeaDrop source):
-  // uint80 mintPrice     → slot 0, bytes 0-31  (right-aligned, so read last 10 bytes = 20 hex chars)
-  // uint48 startTime     → slot 1, bytes 32-63
-  // uint48 endTime       → slot 2, bytes 64-95
-  // uint16 maxTotalMintableByWallet → slot 3
-  // uint16 feeBps        → slot 4
-  // bool   restrictFeeRecipients → slot 5
-  const hex = result.slice(2); // strip 0x
-  const mintPrice   = BigInt('0x' + hex.slice(0, 64));
-  const startTime   = BigInt('0x' + hex.slice(64, 128));
-  const endTime     = BigInt('0x' + hex.slice(128, 192));
-  const maxPerWallet = parseInt('0x' + hex.slice(192, 256), 16);
-  const feeBps      = parseInt('0x' + hex.slice(256, 320), 16);
+// Player
+let player = {
+  x: 100,
+  y: 100,
+  size: 20,
+  speed: 2
+};
 
-  return { mintPrice, startTime, endTime, maxPerWallet, feeBps };
+// Controls
+let keys = {};
+window.addEventListener("keydown", e => keys[e.key] = true);
+window.addEventListener("keyup", e => keys[e.key] = false);
+
+// UPDATE
+function update() {
+  if (keys["w"]) player.y -= player.speed;
+  if (keys["s"]) player.y += player.speed;
+  if (keys["a"]) player.x -= player.speed;
+  if (keys["d"]) player.x += player.speed;
 }
 
-// ─── Read allowed fee recipients from SeaDrop ──────────────────────────────
-// getAllowedFeeRecipients(address) selector = 0x4b80aa3b (from SeaDrop ABI)
-async function fetchAllowedFeeRecipients() {
-  const selector = '0x4b80aa3b';
-  const data = selector + padAddr(NFT);
-  const result = await rpcCall('eth_call', [{ to: SEADROP, data }, 'latest']);
-  if (!result || result === '0x' || result.length < 130) return [];
-  const hex = result.slice(2);
-  // ABI-encoded address[]: offset(32) + length(32) + addresses(32 each)
-  const arrayLen = parseInt(hex.slice(64, 128), 16);
-  const recipients = [];
-  for (let i = 0; i < arrayLen; i++) {
-    const addrHex = hex.slice(128 + i * 64, 128 + (i + 1) * 64);
-    recipients.push('0x' + addrHex.slice(24));
-  }
-  return recipients;
-}
+// DRAW MAP
+function drawMap() {
+  for (let row = 0; row < map.length; row++) {
+    for (let col = 0; col < map[row].length; col++) {
 
-// ─── Switch to Base ──────────────────────────────────────────────────────────
-async function switchToBase() {
-  const p = getProvider() || window.ethereum;
-  if (!p) return;
-  try {
-    await p.request({
-      method: 'wallet_switchEthereumChain',
-      params: [{ chainId: BASE_ID }]
-    });
-  } catch(e) {
-    // 4902 = chain not added
-    if (e.code === 4902 || e.code === -32603) {
-      await p.request({
-        method: 'wallet_addEthereumChain',
-        params: [{
-          chainId: BASE_ID,
-          chainName: 'Base',
-          rpcUrls: [RPC],
-          nativeCurrency: { name:'Ether', symbol:'ETH', decimals:18 },
-          blockExplorerUrls: ['https://basescan.org']
-        }]
-      });
-    } else {
-      throw e;
+      let tile = map[row][col];
+
+      if (tile === 0) ctx.fillStyle = "#3aa655"; // grass
+      if (tile === 1) ctx.fillStyle = "#d9c28f"; // sand
+      if (tile === 2) ctx.fillStyle = "#4ca3dd"; // water
+
+      ctx.fillRect(
+        col * TILE_SIZE,
+        row * TILE_SIZE,
+        TILE_SIZE,
+        TILE_SIZE
+      );
     }
   }
 }
 
-// ─── Get provider (handles timing issues in mobile wallet browsers) ───────────
-function getProvider() {
-  // Rabby / most wallets
-  if (window.ethereum) return window.ethereum;
-  // Some wallets use window.web3
-  if (window.web3 && window.web3.currentProvider) return window.web3.currentProvider;
-  return null;
+// DRAW PLAYER
+function drawPlayer() {
+  ctx.fillStyle = "red";
+  ctx.fillRect(player.x, player.y, player.size, player.size);
 }
 
-async function waitForProvider(timeoutMs = 3000) {
-  return new Promise((resolve) => {
-    if (getProvider()) { resolve(getProvider()); return; }
-    // Poll every 100ms up to timeoutMs
-    let elapsed = 0;
-    const interval = setInterval(() => {
-      elapsed += 100;
-      const p = getProvider();
-      if (p) { clearInterval(interval); resolve(p); return; }
-      if (elapsed >= timeoutMs) { clearInterval(interval); resolve(null); }
-    }, 100);
-  });
+// GAME LOOP
+function gameLoop() {
+  update();
+
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  drawMap();
+  drawPlayer();
+
+  requestAnimationFrame(gameLoop);
 }
 
-// ─── Connect wallet ──────────────────────────────────────────────────────────
-async function connect() {
-  errorMsg = null;
-  // Show connecting state
-  document.getElementById('cardBody').innerHTML =
-    '<div class="alert alert-info"><span class="spin">⟳</span> &nbsp;Detecting wallet...</div>';
-
-  const provider = await waitForProvider(3000);
-
-  if (!provider) {
-    errorMsg = 'No wallet detected. Open this page inside your Rabby wallet browser.';
-    render(); return;
-  }
-
-  // Patch window.ethereum in case it was found via alternate path
-  if (!window.ethereum) window.ethereum = provider;
-
-  try {
-    await switchToBase();
-    const accounts = await provider.request({ method: 'eth_requestAccounts' });
-    if (!accounts || accounts.length === 0) throw new Error('No accounts returned.');
-    wallet = accounts[0];
-    render(); // show loading state
-    // Now fetch drop data
-    const [dropData, feeRecipients] = await Promise.all([
-      fetchPublicDrop(),
-      fetchAllowedFeeRecipients()
-    ]);
-    drop = dropData;
-    // Use first allowed fee recipient, fallback to known OpenSea one
-    if (feeRecipients.length > 0) {
-      window._feeRecipient = feeRecipients[0];
-      console.log('Fee recipients found:', feeRecipients);
-    } else {
-      window._feeRecipient = FEE_RECIP; // fallback
-      console.log('No fee recipients found, using fallback:', FEE_RECIP);
-    }
-    render();
-  } catch(e) {
-    errorMsg = e.message || 'Connection failed.';
-    render();
-  }
-}
-
-// ─── Mint ────────────────────────────────────────────────────────────────────
-// mintPublic(address nftContract, address feeRecipient, address minterIfNotPayer, uint256 quantity)
-// selector: keccak256("mintPublic(address,address,address,uint256)") = 0x161ac21f
-async function mint() {
-  errorMsg = null;
-  mintStatus = 'pending';
-  txHash = null;
-  render();
-
-  try {
-    // Make sure still on Base
-    await switchToBase();
-
-    const mintPrice = drop ? drop.mintPrice : 0n;
-    const totalWei  = mintPrice * BigInt(quantity);
-    const valueHex  = '0x' + totalWei.toString(16);
-
-    // Encode calldata:
-    // mintPublic(address nftContract, address feeRecipient, address minterIfNotPayer, uint256 quantity)
-    const selector = '0x161ac21f';
-    const calldata = selector
-      + padAddr(NFT)           // nftContract
-      + padAddr(window._feeRecipient || FEE_RECIP) // feeRecipient (fetched from chain)
-      + padAddr('0x0000000000000000000000000000000000000000') // minterIfNotPayer = address(0) means use msg.sender
-      + padUint(quantity);     // quantity
-
-    // Gas: 120k base + 50k per extra token
-    const gasLimit = '0x' + (120000 + 50000 * (quantity - 1)).toString(16);
-
-    const tx = await (getProvider()).request({
-      method: 'eth_sendTransaction',
-      params: [{
-        from:  wallet,
-        to:    SEADROP,
-        value: valueHex,
-        data:  calldata,
-        gas:   gasLimit,
-      }]
-    });
-
-    txHash = tx;
-    mintStatus = 'success';
-  } catch(e) {
-    mintStatus = 'error';
-    // Parse revert reasons
-    let msg = e.message || 'Transaction failed.';
-    if (msg.includes('user rejected') || msg.includes('User rejected') || msg.includes('4001')) {
-      msg = 'Transaction rejected in wallet.';
-    } else if (msg.includes('FeeRecipientNotAllowed')) {
-      msg = 'Fee recipient not allowed. The drop may require minting directly on OpenSea.';
-    } else if (msg.includes('NotActive') || msg.includes('not active')) {
-      msg = 'This drop is not currently active.';
-    } else if (msg.includes('MintQuantityExceedsMaxSupply')) {
-      msg = 'Mint quantity exceeds max supply — collection may be sold out.';
-    } else if (msg.includes('MintQuantityExceedsMaxMintedPerWallet') || msg.includes('maxTotalMintableByWallet')) {
-      msg = 'You have reached the max mint limit for this wallet.';
-    }
-    errorMsg = msg;
-  }
-  render();
-}
-
-// ─── Helpers ─────────────────────────────────────────────────────────────────
-function shortAddr(a) {
-  return a ? a.slice(0,6) + '...' + a.slice(-4) : '';
-}
-function fmtEth(wei) {
-  if (wei === 0n) return 'FREE';
-  const eth = Number(wei) / 1e18;
-  return eth.toFixed(4) + ' ETH';
-}
-function fmtTime(ts) {
-  if (!ts || ts === 0n) return '—';
-  return new Date(Number(ts) * 1000).toLocaleString();
-}
-function dropIsActive(d) {
-  if (!d) return false;
-  const now = BigInt(Math.floor(Date.now() / 1000));
-  if (d.startTime > 0n && now < d.startTime) return false;
-  if (d.endTime > 0n && now > d.endTime) return false;
-  return true;
-}
-
-// ─── Render ──────────────────────────────────────────────────────────────────
-function render() {
-  const body = document.getElementById('cardBody');
-  let html = '';
-
-  if (!wallet) {
-    // --- Not connected ---
-    html += `
-      <p class="intro">Connect your Rabby wallet to check the live drop status and mint your Galactic MFERs.</p>
-      <button class="btn btn-outline" onclick="connect()">⬡ &nbsp;Connect Wallet</button>
-    `;
-  } else {
-    // --- Connected ---
-    html += `
-      <div class="wallet-row">
-        <span class="wkey">Connected</span>
-        <span class="wval">${shortAddr(wallet)}</span>
-      </div>
-    `;
-
-    if (!drop && !errorMsg) {
-      // Loading drop data
-      html += `<div class="alert alert-info"><span class="spin">⟳</span> &nbsp;Loading drop data from chain...</div>`;
-    } else if (drop) {
-      const active = dropIsActive(drop);
-      const now = BigInt(Math.floor(Date.now() / 1000));
-      const notStarted = drop.startTime > 0n && now < drop.startTime;
-      const ended = drop.endTime > 0n && now > drop.endTime;
-
-      // Stats
-      html += `<div class="stats">
-        <div class="stat">
-          <div class="stat-label">Mint Price</div>
-          <div class="stat-val">${fmtEth(drop.mintPrice)}</div>
-        </div>
-        <div class="stat">
-          <div class="stat-label">Max / Wallet</div>
-          <div class="stat-val">${drop.maxPerWallet === 0 ? '∞' : drop.maxPerWallet}</div>
-        </div>
-      </div>`;
-
-      if (notStarted) {
-        html += `<div class="alert alert-warn">⏳ Drop starts: ${fmtTime(drop.startTime)}</div>`;
-      } else if (ended) {
-        html += `<div class="alert alert-warn">⛔ This drop has ended (${fmtTime(drop.endTime)})</div>`;
-      }
-
-      if (active) {
-        // Quantity selector
-        const maxQ = drop.maxPerWallet > 0 ? drop.maxPerWallet : 10;
-        html += `
-          <div class="qty-row">
-            <span class="qty-label">Quantity</span>
-            <button class="qty-btn" onclick="changeQty(-1)">−</button>
-            <span class="qty-num" id="qtyDisplay">${quantity}</span>
-            <button class="qty-btn" onclick="changeQty(1)">+</button>
-          </div>
-        `;
-
-        if (drop.mintPrice > 0n) {
-          html += `
-            <div class="total-row">
-              <span>Total</span>
-              <span>${fmtEth(drop.mintPrice * BigInt(quantity))}</span>
-            </div>
-          `;
-        }
-
-        // Mint button
-        if (mintStatus === 'pending') {
-          html += `<button class="btn btn-outline" disabled><span class="spin">⟳</span> &nbsp;Minting...</button>`;
-        } else if (mintStatus === 'success') {
-          html += `<button class="btn btn-success">✓ &nbsp;Minted Successfully!</button>`;
-          if (txHash) {
-            html += `<a class="tx-link" href="${SCAN}${txHash}" target="_blank" rel="noreferrer">View on Basescan ↗</a>`;
-          }
-        } else {
-          html += `<button class="btn btn-primary" onclick="mint()">Mint ${quantity === 1 ? '' : quantity + 'x '}&nbsp;Free</button>`;
-        }
-      }
-    }
-  }
-
-  // Error box (shown regardless of state)
-  if (errorMsg) {
-    html += `<div class="alert alert-error" style="margin-top:14px">⚠ ${errorMsg}</div>`;
-  }
-
-  body.innerHTML = html;
-}
-
-// ─── Qty controls ────────────────────────────────────────────────────────────
-function changeQty(delta) {
-  const maxQ = (drop && drop.maxPerWallet > 0) ? drop.maxPerWallet : 10;
-  quantity = Math.max(1, Math.min(maxQ, quantity + delta));
-  mintStatus = mintStatus === 'success' ? 'success' : 'idle'; // keep success state
-  render();
-}
-
-// ─── Init ────────────────────────────────────────────────────────────────────
-render();
-
-// Wait for provider then attach listeners (handles mobile wallet timing)
-waitForProvider(3000).then((provider) => {
-  if (!provider) return;
-  if (!window.ethereum) window.ethereum = provider;
-  try {
-    provider.on('accountsChanged', (accounts) => {
-      wallet = accounts[0] || null;
-      drop = null; mintStatus = 'idle'; txHash = null; errorMsg = null;
-      render();
-    });
-    provider.on('chainChanged', () => {
-      window.location.reload();
-    });
-  } catch(e) {
-    // Some providers don't support .on() — safe to ignore
-  }
-});
+gameLoop();
 </script>
+
 </body>
 </html>
